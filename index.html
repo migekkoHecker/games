@@ -6,150 +6,43 @@
   <title>Mini Games Hub</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* Reset */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Roboto', sans-serif;
-    }
-
-    body {
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      color: #f1f5f9;
-      display: flex;
-      min-height: 100vh;
-      transition: background 0.5s;
-    }
-
+    * {margin:0;padding:0;box-sizing:border-box;font-family:'Roboto',sans-serif;}
+    body {background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color:#f1f5f9; display:flex; min-height:100vh; transition: background 0.5s; flex-direction: column;}
+    
     /* Sidebar */
-    .sidebar {
-      width: 260px;
-      background: linear-gradient(180deg, rgba(30,41,59,0.95), rgba(30,41,59,0.9));
-      padding: 30px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      backdrop-filter: blur(10px);
-      box-shadow: 3px 0 20px rgba(0,0,0,0.4);
-      transition: background 0.3s;
-    }
+    .sidebar {width:100%; background: linear-gradient(180deg, rgba(30,41,59,0.95), rgba(30,41,59,0.9)); padding:20px 30px; display:flex; flex-direction: column; align-items:center; backdrop-filter:blur(10px); box-shadow:0 3px 20px rgba(0,0,0,0.4);}
+    .sidebar h1 {font-size:2rem; color:#3b82f6; margin-bottom:5px; text-shadow:1px 1px 3px rgba(0,0,0,0.5);}
+    .sidebar p {color:#cbd5e1; font-size:1rem; font-weight:400;}
 
-    .sidebar h1 {
-      font-size: 2rem;
-      color: #3b82f6;
-      margin-bottom: 10px;
-      text-align: center;
-      text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-    }
-
-    .sidebar p {
-      color: #cbd5e1;
-      font-size: 1rem;
-      text-align: center;
-      font-weight: 400;
-    }
+    /* Featured banner */
+    .featured {background-color: rgba(59,130,246,0.15); border-radius:15px; margin:20px auto; padding:30px; text-align:center; max-width:1200px; box-shadow:0 10px 20px rgba(0,0,0,0.5); transition: transform 0.3s;}
+    .featured:hover {transform: scale(1.02);}
+    .featured h2 {font-size:2rem; color:#3b82f6; margin-bottom:10px;}
+    .featured p {font-size:1.1rem; color:#cbd5e1;}
 
     /* Main content */
-    .main {
-      flex: 1;
-      padding: 40px 30px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 30px;
-      align-items: start;
-    }
-
+    .main {flex:1; padding:30px; display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:30px; align-items:start; max-width:1200px; margin:0 auto;}
+    
     /* Game cards */
-    .game-card {
-      background-color: rgba(30, 41, 59, 0.85);
-      border-radius: 15px;
-      padding: 20px;
-      text-decoration: none;
-      color: #f1f5f9;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
-      backdrop-filter: blur(5px);
-      position: relative;
-      overflow: hidden;
-    }
+    .game-card {background-color: rgba(30,41,59,0.85); border-radius:15px; padding:20px; text-decoration:none; color:#f1f5f9; display:flex; flex-direction:column; align-items:center; transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease; backdrop-filter: blur(5px); position:relative; overflow:hidden;}
+    .game-card::before {content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:radial-gradient(circle, rgba(59,130,246,0.3), transparent 70%); transform: rotate(45deg); opacity:0; transition: opacity 0.3s;}
+    .game-card:hover::before {opacity:1;}
+    .game-card:hover {transform: scale(1.05); box-shadow:0 15px 25px rgba(0,0,0,0.6); background-color: rgba(59,130,246,0.1);}
+    .game-card img {width:100px; height:100px; margin-bottom:15px; object-fit:cover; border-radius:12px; transition: transform 0.3s ease;}
+    .game-card:hover img {transform: rotate(5deg) scale(1.1);}
+    .game-card h2 {font-size:1.35rem; margin-bottom:8px; color:#3b82f6; text-align:center; font-weight:700;}
+    .game-card p {font-size:0.95rem; color:#cbd5e1; text-align:center; font-weight:400;}
 
-    .game-card::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(59,130,246,0.3), transparent 70%);
-      transform: rotate(45deg);
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
+    /* Badges */
+    .badge {position:absolute; top:10px; right:10px; background-color:#ef4444; color:#fff; font-size:0.75rem; font-weight:700; padding:4px 8px; border-radius:10px; text-transform:uppercase; box-shadow:0 2px 5px rgba(0,0,0,0.3);}
+    .badge.hot {background-color:#f59e0b;} /* hot badge */
 
-    .game-card:hover::before {
-      opacity: 1;
-    }
-
-    .game-card:hover {
-      transform: scale(1.05);
-      box-shadow: 0 15px 25px rgba(0,0,0,0.6);
-      background-color: rgba(59, 130, 246, 0.1);
-    }
-
-    .game-card img {
-      width: 100px;
-      height: 100px;
-      margin-bottom: 15px;
-      object-fit: cover;
-      border-radius: 12px;
-      transition: transform 0.3s ease;
-    }
-
-    .game-card:hover img {
-      transform: rotate(5deg) scale(1.1);
-    }
-
-    .game-card h2 {
-      font-size: 1.35rem;
-      margin-bottom: 8px;
-      color: #3b82f6;
-      text-align: center;
-      font-weight: 700;
-    }
-
-    .game-card p {
-      font-size: 0.95rem;
-      color: #cbd5e1;
-      text-align: center;
-      font-weight: 400;
-    }
-
-    /* Responsive */
-    @media(max-width: 768px){
-      body {
-        flex-direction: column;
-      }
-      .sidebar {
-        width: 100%;
-        flex-direction: row;
-        justify-content: space-between;
-        padding: 15px 20px;
-      }
-      .sidebar h1, .sidebar p {
-        font-size: 1rem;
-      }
-      .main {
-        padding: 20px;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-        gap: 20px;
-      }
-      .game-card img {
-        width: 80px;
-        height: 80px;
-      }
+    @media(max-width:768px){
+      .main {grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:20px; padding:20px;}
+      .game-card img {width:80px; height:80px;}
+      .sidebar {flex-direction:column;}
+      .sidebar h1, .sidebar p {font-size:1rem;}
+      .featured {padding:20px;}
     }
   </style>
 </head>
@@ -160,11 +53,37 @@
     <p>Click a game to play!</p>
   </div>
 
+  <!-- Featured game banner -->
+  <div class="featured">
+    <h2>Featured Game: Ball Duelist 2</h2>
+    <p>Check out the most exciting game on the hub right now!</p>
+  </div>
+
   <div class="main">
     <a class="game-card" href="ball-duelist-2/">
+      <div class="badge new">New</div>
       <img src="https://via.placeholder.com/100?text=Ball" alt="Ball Duelist 2">
       <h2>Ball Duelist 2</h2>
       <p>Best game ever</p>
+    </a>
+
+    <a class="game-card" href="space-shooter/">
+      <div class="badge hot">Hot</div>
+      <img src="https://via.placeholder.com/100?text=Space" alt="Space Shooter">
+      <h2>Space Shooter</h2>
+      <p>Shoot aliens and dodge bullets!</p>
+    </a>
+
+    <a class="game-card" href="maze-runner/">
+      <img src="https://via.placeholder.com/100?text=Maze" alt="Maze Runner">
+      <h2>Maze Runner</h2>
+      <p>Find your way out before time runs out.</p>
+    </a>
+
+    <a class="game-card" href="puzzle-mania/">
+      <img src="https://via.placeholder.com/100?text=Puzzle" alt="Puzzle Mania">
+      <h2>Puzzle Mania</h2>
+      <p>Solve tricky puzzles to win.</p>
     </a>
   </div>
 
