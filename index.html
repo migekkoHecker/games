@@ -17,41 +17,53 @@
     body {
       background-color: #0f172a;
       color: #f1f5f9;
-      display: flex;
       min-height: 100vh;
     }
 
-    /* Sidebar */
-    .sidebar {
-      width: 250px;
+    /* Navigation Bar */
+    nav {
+      width: 100%;
       background-color: #1e293b;
-      padding: 30px 20px;
+      padding: 15px 30px;
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
       align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
-    .sidebar h1 {
-      font-size: 1.8rem;
+    nav h1 {
+      font-size: 1.5rem;
       color: #3b82f6;
-      margin-bottom: 20px;
-      text-align: center;
     }
 
-    .sidebar p {
-      color: #94a3b8;
-      font-size: 0.95rem;
-      text-align: center;
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+
+    nav ul li a {
+      color: #f1f5f9;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    nav ul li a:hover {
+      color: #3b82f6;
     }
 
     /* Main content */
-    .main {
-      flex: 1;
+    main {
       padding: 40px 30px;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 25px;
-      align-items: start;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
     /* Game cards */
@@ -93,39 +105,49 @@
       text-align: center;
     }
 
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 20px;
+      background-color: #1e293b;
+      color: #94a3b8;
+      margin-top: 40px;
+    }
+
     @media(max-width: 768px){
-      body {
-        flex-direction: column;
+      nav ul {
+        gap: 10px;
       }
-      .sidebar {
-        width: 100%;
-        flex-direction: row;
-        justify-content: space-between;
-        padding: 15px 20px;
-      }
-      .sidebar h1, .sidebar p {
-        font-size: 1rem;
-      }
-      .main {
-        padding: 20px;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+
+      main {
+        padding: 20px 15px;
         gap: 15px;
+      }
+
+      .game-card img {
+        width: 70px;
+        height: 70px;
       }
     }
   </style>
 </head>
 <body>
 
-  <div class="sidebar">
+  <nav>
     <h1>Mini Games Hub</h1>
-    <p>Click a game to play!</p>
-  </div>
+    <ul>
+      <li><a href="#">Home</a></li>
+      <li><a href="#">Arcade</a></li>
+      <li><a href="#">Puzzle</a></li>
+      <li><a href="#">Action</a></li>
+    </ul>
+  </nav>
 
-  <div class="main">
+  <main>
     <a class="game-card" href="ball-duelist-2/">
       <img src="https://via.placeholder.com/80?text=Ball" alt="Ball Duelist 2">
       <h2>Ball Duelist 2</h2>
-      <p>Fast-paced ball combat fun.</p>
+      <p>The best game ever</p>
     </a>
 
     <a class="game-card" href="space-shooter/">
@@ -145,7 +167,11 @@
       <h2>Puzzle Mania</h2>
       <p>Solve tricky puzzles to win.</p>
     </a>
-  </div>
+  </main>
+
+  <footer>
+    &copy; 2025 Mini Games Hub
+  </footer>
 
 </body>
 </html>
