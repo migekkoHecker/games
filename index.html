@@ -4,96 +4,144 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mini Games Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* Basic reset */
+    /* Reset */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: Arial, sans-serif;
+      font-family: 'Roboto', sans-serif;
     }
 
     body {
-      background: #0f172a;
+      background-color: #0f172a;
+      color: #f1f5f9;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background-color: #1e293b;
+      padding: 30px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .sidebar h1 {
+      font-size: 1.8rem;
+      color: #3b82f6;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .sidebar p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    /* Main content */
+    .main {
+      flex: 1;
+      padding: 40px 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 25px;
+      align-items: start;
+    }
+
+    /* Game cards */
+    .game-card {
+      background-color: #1e293b;
+      border-radius: 15px;
+      padding: 20px;
+      text-decoration: none;
       color: #f1f5f9;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
       align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 20px;
-    }
-
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 20px;
-      color: #3b82f6;
-    }
-
-    p {
-      margin-bottom: 40px;
-      font-size: 1.1rem;
-      color: #94a3b8;
-    }
-
-    .games-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 20px;
-      width: 100%;
-      max-width: 900px;
-    }
-
-    .game-card {
-      background: #1e293b;
-      padding: 20px;
-      border-radius: 12px;
       transition: transform 0.2s, box-shadow 0.2s;
-      cursor: pointer;
-      text-decoration: none;
-      color: #f1f5f9;
     }
 
     .game-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    }
+
+    .game-card img {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 15px;
+      object-fit: cover;
+      border-radius: 10px;
     }
 
     .game-card h2 {
       font-size: 1.2rem;
       margin-bottom: 10px;
       color: #3b82f6;
+      text-align: center;
     }
 
     .game-card p {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       color: #cbd5e1;
+      text-align: center;
+    }
+
+    @media(max-width: 768px){
+      body {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 15px 20px;
+      }
+      .sidebar h1, .sidebar p {
+        font-size: 1rem;
+      }
+      .main {
+        padding: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h1>Mini Games Hub</h1>
-  <p>Click a game to play instantly!</p>
+  <div class="sidebar">
+    <h1>Mini Games Hub</h1>
+    <p>Click a game to play!</p>
+  </div>
 
-  <div class="games-grid">
+  <div class="main">
     <a class="game-card" href="ball-duelist-2/">
+      <img src="https://via.placeholder.com/80?text=Ball" alt="Ball Duelist 2">
       <h2>Ball Duelist 2</h2>
       <p>Fast-paced ball combat fun.</p>
     </a>
 
-    <a class="game-card" href="game2/">
+    <a class="game-card" href="space-shooter/">
+      <img src="https://via.placeholder.com/80?text=Space" alt="Space Shooter">
       <h2>Space Shooter</h2>
       <p>Shoot aliens and dodge bullets!</p>
     </a>
 
-    <a class="game-card" href="game3/">
+    <a class="game-card" href="maze-runner/">
+      <img src="https://via.placeholder.com/80?text=Maze" alt="Maze Runner">
       <h2>Maze Runner</h2>
       <p>Find your way out before time runs out.</p>
     </a>
 
-    <a class="game-card" href="game4/">
+    <a class="game-card" href="puzzle-mania/">
+      <img src="https://via.placeholder.com/80?text=Puzzle" alt="Puzzle Mania">
       <h2>Puzzle Mania</h2>
       <p>Solve tricky puzzles to win.</p>
     </a>
