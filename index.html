@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Games Hub</title>
+  <style>
+    /* Basic reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #0f172a;
+      color: #f1f5f9;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: #3b82f6;
+    }
+
+    p {
+      margin-bottom: 40px;
+      font-size: 1.1rem;
+      color: #94a3b8;
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .game-card {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 12px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      text-decoration: none;
+      color: #f1f5f9;
+    }
+
+    .game-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+
+    .game-card h2 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+      color: #3b82f6;
+    }
+
+    .game-card p {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Mini Games Hub</h1>
+  <p>Click a game to play instantly!</p>
+
+  <div class="games-grid">
+    <a class="game-card" href="ball-duelist-2/">
+      <h2>Ball Duelist 2</h2>
+      <p>Fast-paced ball combat fun.</p>
+    </a>
+
+    <a class="game-card" href="game2/">
+      <h2>Space Shooter</h2>
+      <p>Shoot aliens and dodge bullets!</p>
+    </a>
+
+    <a class="game-card" href="game3/">
+      <h2>Maze Runner</h2>
+      <p>Find your way out before time runs out.</p>
+    </a>
+
+    <a class="game-card" href="game4/">
+      <h2>Puzzle Mania</h2>
+      <p>Solve tricky puzzles to win.</p>
+    </a>
+  </div>
+
+</body>
+</html>
