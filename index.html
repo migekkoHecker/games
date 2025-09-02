@@ -25,13 +25,14 @@
     /* Sidebar */
     .sidebar {
       width: 260px;
-      background-color: rgba(30, 41, 59, 0.95);
+      background: linear-gradient(180deg, rgba(30,41,59,0.95), rgba(30,41,59,0.9));
       padding: 30px 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
       backdrop-filter: blur(10px);
-      box-shadow: 3px 0 15px rgba(0,0,0,0.3);
+      box-shadow: 3px 0 20px rgba(0,0,0,0.4);
+      transition: background 0.3s;
     }
 
     .sidebar h1 {
@@ -39,7 +40,7 @@
       color: #3b82f6;
       margin-bottom: 10px;
       text-align: center;
-      text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
     }
 
     .sidebar p {
@@ -71,21 +72,40 @@
       align-items: center;
       transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
       backdrop-filter: blur(5px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .game-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(59,130,246,0.3), transparent 70%);
+      transform: rotate(45deg);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .game-card:hover::before {
+      opacity: 1;
     }
 
     .game-card:hover {
       transform: scale(1.05);
-      box-shadow: 0 15px 25px rgba(0,0,0,0.5);
-      background-color: rgba(59, 130, 246, 0.15);
+      box-shadow: 0 15px 25px rgba(0,0,0,0.6);
+      background-color: rgba(59, 130, 246, 0.1);
     }
 
     .game-card img {
-      width: 90px;
-      height: 90px;
+      width: 100px;
+      height: 100px;
       margin-bottom: 15px;
       object-fit: cover;
       border-radius: 12px;
-      transition: transform 0.25s ease;
+      transition: transform 0.3s ease;
     }
 
     .game-card:hover img {
@@ -93,7 +113,7 @@
     }
 
     .game-card h2 {
-      font-size: 1.3rem;
+      font-size: 1.35rem;
       margin-bottom: 8px;
       color: #3b82f6;
       text-align: center;
@@ -127,8 +147,8 @@
         gap: 20px;
       }
       .game-card img {
-        width: 70px;
-        height: 70px;
+        width: 80px;
+        height: 80px;
       }
     }
   </style>
@@ -142,25 +162,25 @@
 
   <div class="main">
     <a class="game-card" href="ball-duelist-2/">
-      <img src="https://via.placeholder.com/90?text=Ball" alt="Ball Duelist 2">
+      <img src="https://via.placeholder.com/100?text=Ball" alt="Ball Duelist 2">
       <h2>Ball Duelist 2</h2>
       <p>Best game ever</p>
     </a>
 
     <a class="game-card" href="space-shooter/">
-      <img src="https://via.placeholder.com/90?text=Space" alt="Space Shooter">
+      <img src="https://via.placeholder.com/100?text=Space" alt="Space Shooter">
       <h2>Space Shooter</h2>
       <p>Shoot aliens and dodge bullets!</p>
     </a>
 
     <a class="game-card" href="maze-runner/">
-      <img src="https://via.placeholder.com/90?text=Maze" alt="Maze Runner">
+      <img src="https://via.placeholder.com/100?text=Maze" alt="Maze Runner">
       <h2>Maze Runner</h2>
       <p>Find your way out before time runs out.</p>
     </a>
 
     <a class="game-card" href="puzzle-mania/">
-      <img src="https://via.placeholder.com/90?text=Puzzle" alt="Puzzle Mania">
+      <img src="https://via.placeholder.com/100?text=Puzzle" alt="Puzzle Mania">
       <h2>Puzzle Mania</h2>
       <p>Solve tricky puzzles to win.</p>
     </a>
