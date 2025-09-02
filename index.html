@@ -15,60 +15,53 @@
     }
 
     body {
-      background-color: #0f172a;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
       color: #f1f5f9;
+      display: flex;
       min-height: 100vh;
+      transition: background 0.5s;
     }
 
-    /* Navigation Bar */
-    nav {
-      width: 100%;
-      background-color: #1e293b;
-      padding: 15px 30px;
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background-color: rgba(30, 41, 59, 0.95);
+      padding: 30px 20px;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      backdrop-filter: blur(10px);
+      box-shadow: 3px 0 15px rgba(0,0,0,0.3);
     }
 
-    nav h1 {
-      font-size: 1.5rem;
+    .sidebar h1 {
+      font-size: 2rem;
       color: #3b82f6;
+      margin-bottom: 10px;
+      text-align: center;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
     }
 
-    nav ul {
-      list-style: none;
-      display: flex;
-      gap: 20px;
-    }
-
-    nav ul li a {
-      color: #f1f5f9;
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-
-    nav ul li a:hover {
-      color: #3b82f6;
+    .sidebar p {
+      color: #cbd5e1;
+      font-size: 1rem;
+      text-align: center;
+      font-weight: 400;
     }
 
     /* Main content */
-    main {
+    .main {
+      flex: 1;
       padding: 40px 30px;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 25px;
-      max-width: 1200px;
-      margin: 0 auto;
+      gap: 30px;
+      align-items: start;
     }
 
     /* Game cards */
     .game-card {
-      background-color: #1e293b;
+      background-color: rgba(30, 41, 59, 0.85);
       border-radius: 15px;
       padding: 20px;
       text-decoration: none;
@@ -76,54 +69,63 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+      backdrop-filter: blur(5px);
     }
 
     .game-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+      transform: scale(1.05);
+      box-shadow: 0 15px 25px rgba(0,0,0,0.5);
+      background-color: rgba(59, 130, 246, 0.15);
     }
 
     .game-card img {
-      width: 80px;
-      height: 80px;
+      width: 90px;
+      height: 90px;
       margin-bottom: 15px;
       object-fit: cover;
-      border-radius: 10px;
+      border-radius: 12px;
+      transition: transform 0.25s ease;
+    }
+
+    .game-card:hover img {
+      transform: rotate(5deg) scale(1.1);
     }
 
     .game-card h2 {
-      font-size: 1.2rem;
-      margin-bottom: 10px;
+      font-size: 1.3rem;
+      margin-bottom: 8px;
       color: #3b82f6;
       text-align: center;
+      font-weight: 700;
     }
 
     .game-card p {
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       color: #cbd5e1;
       text-align: center;
+      font-weight: 400;
     }
 
-    /* Footer */
-    footer {
-      text-align: center;
-      padding: 20px;
-      background-color: #1e293b;
-      color: #94a3b8;
-      margin-top: 40px;
-    }
-
+    /* Responsive */
     @media(max-width: 768px){
-      nav ul {
-        gap: 10px;
+      body {
+        flex-direction: column;
       }
-
-      main {
-        padding: 20px 15px;
-        gap: 15px;
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 15px 20px;
       }
-
+      .sidebar h1, .sidebar p {
+        font-size: 1rem;
+      }
+      .main {
+        padding: 20px;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 20px;
+      }
       .game-card img {
         width: 70px;
         height: 70px;
@@ -133,45 +135,36 @@
 </head>
 <body>
 
-  <nav>
+  <div class="sidebar">
     <h1>Mini Games Hub</h1>
-    <ul>
-      <li><a href="#">Home</a></li>
-      <li><a href="#">Arcade</a></li>
-      <li><a href="#">Puzzle</a></li>
-      <li><a href="#">Action</a></li>
-    </ul>
-  </nav>
+    <p>Click a game to play!</p>
+  </div>
 
-  <main>
+  <div class="main">
     <a class="game-card" href="ball-duelist-2/">
-      <img src="https://via.placeholder.com/80?text=Ball" alt="Ball Duelist 2">
+      <img src="https://via.placeholder.com/90?text=Ball" alt="Ball Duelist 2">
       <h2>Ball Duelist 2</h2>
-      <p>The best game ever</p>
+      <p>Best game ever</p>
     </a>
 
     <a class="game-card" href="space-shooter/">
-      <img src="https://via.placeholder.com/80?text=Space" alt="Space Shooter">
+      <img src="https://via.placeholder.com/90?text=Space" alt="Space Shooter">
       <h2>Space Shooter</h2>
       <p>Shoot aliens and dodge bullets!</p>
     </a>
 
     <a class="game-card" href="maze-runner/">
-      <img src="https://via.placeholder.com/80?text=Maze" alt="Maze Runner">
+      <img src="https://via.placeholder.com/90?text=Maze" alt="Maze Runner">
       <h2>Maze Runner</h2>
       <p>Find your way out before time runs out.</p>
     </a>
 
     <a class="game-card" href="puzzle-mania/">
-      <img src="https://via.placeholder.com/80?text=Puzzle" alt="Puzzle Mania">
+      <img src="https://via.placeholder.com/90?text=Puzzle" alt="Puzzle Mania">
       <h2>Puzzle Mania</h2>
       <p>Solve tricky puzzles to win.</p>
     </a>
-  </main>
-
-  <footer>
-    &copy; 2025 Mini Games Hub
-  </footer>
+  </div>
 
 </body>
 </html>
