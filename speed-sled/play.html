@@ -4,98 +4,85 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Speed Sled</title>
-<link rel="icon" href="https://raw.githubusercontent.com/migekkoHecker/games/refs/heads/main/sled-logo.png" type="image/png">
+<link rel="icon" href="https://raw.githubusercontent.com/migekkoHecker/games/refs/heads/main/sled-logo.png">
 <style>
   html, body {
     margin: 0;
+    padding: 0;
     height: 100%;
     width: 100%;
     font-family: 'Roboto', sans-serif;
     background: linear-gradient(135deg, #0f172a, #1e293b);
     color: #f1f5f9;
-    box-sizing: border-box;
-    overflow: hidden;
+    overflow: hidden; /* prevent scrollbars */
   }
 
-  body {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 30px;
-    transition: background 0.3s;
+  h1 {
+    text-align: center;
+    color: #3b82f6;
+    margin: 20px 0;
   }
 
-  .container {
+  #container {
     display: flex;
     flex-direction: row;
     gap: 30px;
     width: 100%;
     max-width: 1200px;
+    margin: 0 auto;
     align-items: flex-start;
-    transition: all 0.3s;
   }
 
   .game-wrapper {
     position: relative;
-    width: calc(480px * 1.6);
-    height: calc(360px * 1.6);
+    width: 800px;
+    aspect-ratio: 480 / 360;
     background: #000;
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-    transition: all 0.3s;
-    z-index: 10;
-  }
-
-  .game-wrapper.fullscreen {
-    width: 100vw;
-    height: 100vh;
-    border-radius: 0;
-    box-shadow: none;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
   }
 
   .game-wrapper iframe {
+    position: absolute;
     width: 100%;
     height: 100%;
+    transform-origin: top left;
     border: none;
-    display: block;
   }
 
   .instructions {
-    flex-shrink: 0;
     width: 300px;
     background: rgba(30,41,59,0.85);
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-    height: fit-content;
-    transition: opacity 0.3s;
+    flex-shrink: 0;
+    transition: opacity 0.3s ease;
   }
 
-  .instructions.hidden {
+  .hidden {
     opacity: 0;
     pointer-events: none;
     width: 0;
-    padding: 0;
-    margin: 0;
   }
 
-  h1 {
-    text-align: center;
-    width: 100%;
-    margin-bottom: 20px;
-    color: #3b82f6;
-  }
-
-  h2 {
-    color: #38bdf8;
-    margin-bottom: 10px;
+  .fullscreen-game {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    aspect-ratio: auto !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    z-index: 9999;
   }
 
   .fullscreen-btn {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
+    margin-top: 10px;
     padding: 10px 15px;
     background: #3b82f6;
     color: white;
@@ -104,75 +91,57 @@
     border-radius: 8px;
     cursor: pointer;
     transition: background 0.2s;
-    z-index: 20;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    z-index: 10000;
   }
 
   .fullscreen-btn:hover {
     background: #2563eb;
   }
-
-  @media(max-width: 1000px){
-    .container {
-      flex-direction: column;
-      align-items: center;
-    }
-    .instructions {
-      width: 100%;
-    }
-    .game-wrapper {
-      width: calc(480px * 1.3);
-      height: calc(360px * 1.3);
-    }
-  }
 </style>
 </head>
 <body>
-  <div>
-    <h1>Speed Sled</h1>
-    <div class="container" id="container">
-      <div class="game-wrapper" id="gameWrapper">
-        <iframe id="gameFrame" src="index.html" allowtransparency="true" scrolling="no"></iframe>
-        <button class="fullscreen-btn" id="fullscreenBtn">Fullscreen</button>
-      </div>
+  <h1>Speed Sled</h1>
+  <div id="container">
+    <div class="game-wrapper" id="gameWrapper">
+      <iframe id="gameFrame" src="https://turbowarp.org/1086209938/embed?autoplay&fullscreen-background=black&pause&clones" allowtransparency="true" scrolling="no"></iframe>
+      <button class="fullscreen-btn" id="fullscreenBtn">Fullscreen</button>
+    </div>
 
-      <div class="instructions" id="instructions">
-        <h2>How to Play</h2>
-        <p>Just race and get some good times</p>
-        <p>🎮 Player 1: <b>WASD</b></p>
-        <p>🎮 Player 2: <b>Arrow Keys</b></p>
-        <p>🔥 Each character has unique abilities</p>
+    <div class="instructions" id="instructions">
+      <h2>How to Play</h2>
+      <p>Just race and get some good times</p>
+      <p>🎮 Player 1: <b>WASD</b></p>
+      <p>🎮 Player 2: <b>Arrow Keys</b></p>
+      <p>🔥 Each character has unique abilities</p>
 
-        <h2>Credits</h2>
-        <p>Made by <b>Pikminie</b></p>
-      </div>
+      <h2>Credits</h2>
+      <p>Made by <b>Pikminie</b></p>
     </div>
   </div>
 
 <script>
-  const fullscreenBtn = document.getElementById('fullscreenBtn');
-  const gameWrapper = document.getElementById('gameWrapper');
-  const instructions = document.getElementById('instructions');
-  const container = document.getElementById('container');
-  const header = document.querySelector('h1');
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+const gameWrapper = document.getElementById('gameWrapper');
+const instructions = document.getElementById('instructions');
+const header = document.querySelector('h1');
 
-  let isFullscreen = false;
+let isFullscreen = false;
 
-  fullscreenBtn.addEventListener('click', () => {
-    isFullscreen = !isFullscreen;
-
-    if (isFullscreen) {
-      gameWrapper.classList.add('fullscreen');
-      instructions.classList.add('hidden');
-      header.style.display = 'none';
-      container.style.justifyContent = 'center';
-    } else {
-      gameWrapper.classList.remove('fullscreen');
-      instructions.classList.remove('hidden');
-      header.style.display = 'block';
-      container.style.justifyContent = 'flex-start';
-    }
-  });
+fullscreenBtn.addEventListener('click', () => {
+  isFullscreen = !isFullscreen;
+  if (isFullscreen) {
+    gameWrapper.classList.add('fullscreen-game');
+    instructions.classList.add('hidden');
+    header.style.display = 'none';
+  } else {
+    gameWrapper.classList.remove('fullscreen-game');
+    instructions.classList.remove('hidden');
+    header.style.display = 'block';
+  }
+});
 </script>
-
 </body>
 </html>
