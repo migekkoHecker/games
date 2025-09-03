@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ball Duelist 2</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: #f1f5f9;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 30px;
+    box-sizing: border-box;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    width: 100%;
+    max-width: 1200px;
+    align-items: flex-start;
+  }
+
+  .game-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 800px; /* optional max width */
+    aspect-ratio: 480 / 360; /* keep Scratch aspect ratio */
+    background: #000;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+  }
+
+  .game-wrapper iframe {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform-origin: top left;
+    border: none;
+  }
+
+  .instructions {
+    flex-shrink: 0;
+    width: 300px;
+    background: rgba(30,41,59,0.85);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    height: fit-content;
+  }
+
+  h1 {
+    text-align: center;
+    width: 100%;
+    margin-bottom: 20px;
+    color: #3b82f6;
+  }
+
+  h2 {
+    color: #38bdf8;
+    margin-bottom: 10px;
+  }
+
+  .fullscreen-btn {
+    margin-top: 10px;
+    padding: 10px 15px;
+    background: #3b82f6;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .fullscreen-btn:hover {
+    background: #2563eb;
+  }
+
+  @media(max-width: 1000px){
+    .container {
+      flex-direction: column;
+      align-items: center;
+    }
+    .instructions {
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+  <div>
+    <h1>Ball Duelist 2</h1>
+    <div class="container">
+      <div class="game-wrapper" id="gameWrapper">
+        <iframe id="gameFrame" src="index.html" allowtransparency="true" scrolling="no"></iframe>
+        <button class="fullscreen-btn" onclick="goFullscreen()">Fullscreen</button>
+      </div>
+
+      <div class="instructions">
+        <h2>How to Play</h2>
+        <p>Just race and get some good times</p>
+        <p>🎮 Player 1: <b>WASD</b></p>
+        <p>🎮 Player 2: <b>Arrow Keys</b></p>
+        <p>🔥 Each character has unique abilities</p>
+
+        <h2>Credits</h2>
+        <p>Made by <b>Pikminie</b></p>
+      </div>
+    </div>
+  </div>
+
+<script>
+  function goFullscreen() {
+    const iframe = document.getElementById("gameWrapper");
+    if (iframe.requestFullscreen) iframe.requestFullscreen();
+    else if (iframe.mozRequestFullScreen) iframe.mozRequestFullScreen();
+    else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
+    else if (iframe.msRequestFullscreen) iframe.msRequestFullscreen();
+  }
+
+  // Automatically scale iframe to fit container
+  function scaleGame() {
+    const wrapper = document.getElementById("gameWrapper");
+    const iframe = document.getElementById("gameFrame");
+
+    const width = wrapper.clientWidth;
+    const height = wrapper.clientHeight;
+
+    const scaleX = width / 480; // original width
+    const scaleY = height / 360; // original height
+    const scale = Math.min(scaleX, scaleY);
+
+    iframe.style.transform = `scale(${scale})`;
+  }
+
+  window.addEventListener('resize', scaleGame);
+  window.addEventListener('load', scaleGame);
+</script>
+</body>
+</html>
