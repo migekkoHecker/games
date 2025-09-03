@@ -153,6 +153,7 @@
   const gameWrapper = document.getElementById('gameWrapper');
   const instructions = document.getElementById('instructions');
   const container = document.getElementById('container');
+  const header = document.querySelector('h1');
 
   let isFullscreen = false;
 
@@ -162,13 +163,16 @@
     if (isFullscreen) {
       gameWrapper.classList.add('fullscreen');
       instructions.classList.add('hidden');
+      header.style.display = 'none';
       container.style.justifyContent = 'center';
     } else {
       gameWrapper.classList.remove('fullscreen');
       instructions.classList.remove('hidden');
+      header.style.display = 'block';
       container.style.justifyContent = 'flex-start';
     }
   });
 </script>
+
 </body>
 </html>
