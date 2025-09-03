@@ -31,14 +31,17 @@
 
   .game-wrapper {
     position: relative;
-    width: 480px;  /* original width */
-    height: 360px; /* original height */
-    transform-origin: top left;
+    width: calc(480px * 1.6);  /* scale original width */
+    height: calc(360px * 1.6); /* scale original height */
+    background: #000;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.6);
   }
 
   .game-wrapper iframe {
-    width: 480px;
-    height: 360px;
+    width: 100%;
+    height: 100%;
     border: none;
     display: block;
   }
@@ -89,6 +92,10 @@
     .instructions {
       width: 100%;
     }
+    .game-wrapper {
+      width: calc(480px * 1.3);
+      height: calc(360px * 1.3);
+    }
   }
 </style>
 </head>
@@ -103,7 +110,7 @@
 
       <div class="instructions">
         <h2>How to Play</h2>
-        <p>Just race and get some good times</p>
+        <p>Just race and get some good times on time trials</p>
         <p>🎮 Player 1: <b>WASD</b></p>
         <p>🎮 Player 2: <b>Arrow Keys</b></p>
         <p>🔥 Each character has unique abilities</p>
@@ -115,24 +122,12 @@
   </div>
 
 <script>
-  const originalWidth = 480;
-  const originalHeight = 360;
-  const scaleFactor = 1.6; // Increase game size by 1.6x
-
-  function scaleGame() {
-    const wrapper = document.getElementById("gameWrapper");
-    wrapper.style.transform = `scale(${scaleFactor})`;
-  }
-
-  window.addEventListener('resize', scaleGame);
-  window.addEventListener('load', scaleGame);
-
   function goFullscreen() {
-    const iframe = document.getElementById("gameWrapper");
-    if (iframe.requestFullscreen) iframe.requestFullscreen();
-    else if (iframe.mozRequestFullScreen) iframe.mozRequestFullScreen();
-    else if (iframe.webkitRequestFullscreen) iframe.webkitRequestFullscreen();
-    else if (iframe.msRequestFullscreen) iframe.msRequestFullscreen();
+    const wrapper = document.getElementById("gameWrapper");
+    if (wrapper.requestFullscreen) wrapper.requestFullscreen();
+    else if (wrapper.mozRequestFullScreen) wrapper.mozRequestFullScreen();
+    else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
+    else if (wrapper.msRequestFullscreen) wrapper.msRequestFullscreen();
   }
 </script>
 </body>
