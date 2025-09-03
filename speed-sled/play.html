@@ -13,11 +13,16 @@
     font-family: 'Roboto', sans-serif;
     background: linear-gradient(135deg, #0f172a, #1e293b);
     color: #f1f5f9;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
     padding: 30px;
-    box-sizing: border-box;
+    transition: background 0.3s;
   }
 
   .container {
@@ -27,16 +32,26 @@
     width: 100%;
     max-width: 1200px;
     align-items: flex-start;
+    transition: all 0.3s;
   }
 
   .game-wrapper {
     position: relative;
-    width: calc(480px * 1.6);  /* scale original width */
-    height: calc(360px * 1.6); /* scale original height */
+    width: calc(480px * 1.6);
+    height: calc(360px * 1.6);
     background: #000;
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+    transition: all 0.3s;
+    z-index: 10;
+  }
+
+  .game-wrapper.fullscreen {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
   }
 
   .game-wrapper iframe {
@@ -54,6 +69,15 @@
     border-radius: 12px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.4);
     height: fit-content;
+    transition: opacity 0.3s;
+  }
+
+  .instructions.hidden {
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    padding: 0;
+    margin: 0;
   }
 
   h1 {
@@ -69,7 +93,9 @@
   }
 
   .fullscreen-btn {
-    margin-top: 10px;
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
     padding: 10px 15px;
     background: #3b82f6;
     color: white;
@@ -78,6 +104,7 @@
     border-radius: 8px;
     cursor: pointer;
     transition: background 0.2s;
+    z-index: 20;
   }
 
   .fullscreen-btn:hover {
@@ -102,15 +129,15 @@
 <body>
   <div>
     <h1>Speed Sled</h1>
-    <div class="container">
+    <div class="container" id="container">
       <div class="game-wrapper" id="gameWrapper">
         <iframe id="gameFrame" src="index.html" allowtransparency="true" scrolling="no"></iframe>
-        <button class="fullscreen-btn" onclick="goFullscreen()">Fullscreen</button>
+        <button class="fullscreen-btn" id="fullscreenBtn">Fullscreen</button>
       </div>
 
-      <div class="instructions">
+      <div class="instructions" id="instructions">
         <h2>How to Play</h2>
-        <p>Just race and get some good times on time trials</p>
+        <p>Just race and get some good times</p>
         <p>🎮 Player 1: <b>WASD</b></p>
         <p>🎮 Player 2: <b>Arrow Keys</b></p>
         <p>🔥 Each character has unique abilities</p>
@@ -122,13 +149,26 @@
   </div>
 
 <script>
-  function goFullscreen() {
-    const wrapper = document.getElementById("gameWrapper");
-    if (wrapper.requestFullscreen) wrapper.requestFullscreen();
-    else if (wrapper.mozRequestFullScreen) wrapper.mozRequestFullScreen();
-    else if (wrapper.webkitRequestFullscreen) wrapper.webkitRequestFullscreen();
-    else if (wrapper.msRequestFullscreen) wrapper.msRequestFullscreen();
-  }
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+  const gameWrapper = document.getElementById('gameWrapper');
+  const instructions = document.getElementById('instructions');
+  const container = document.getElementById('container');
+
+  let isFullscreen = false;
+
+  fullscreenBtn.addEventListener('click', () => {
+    isFullscreen = !isFullscreen;
+
+    if (isFullscreen) {
+      gameWrapper.classList.add('fullscreen');
+      instructions.classList.add('hidden');
+      container.style.justifyContent = 'center';
+    } else {
+      gameWrapper.classList.remove('fullscreen');
+      instructions.classList.remove('hidden');
+      container.style.justifyContent = 'flex-start';
+    }
+  });
 </script>
 </body>
 </html>
