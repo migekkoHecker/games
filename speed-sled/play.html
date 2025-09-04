@@ -15,42 +15,34 @@
     background: linear-gradient(135deg, #0f172a, #1e293b);
     color: #f1f5f9;
     overflow: hidden;
-  }
-
-  h1 {
-    text-align: center;
-    color: #3b82f6;
-    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
   }
 
   #container {
     display: flex;
     flex-direction: row;
-    gap: 30px;
     width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    align-items: flex-start;
+    height: 100%;
+    max-width: 100vw;
+    max-height: 100vh;
+    overflow: hidden;
   }
 
   .game-wrapper {
-    position: relative;
-    width: 480px;
-    height: 360px;
+    flex-shrink: 0;
     background: #000;
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-    flex-shrink: 0;
-    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .game-wrapper iframe {
-    position: absolute;
-    width: 480px;
-    height: 360px;
-    top: 0;
-    left: 0;
     border: none;
     transform-origin: top left;
   }
@@ -62,68 +54,39 @@
     border-radius: 12px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.4);
     flex-shrink: 0;
-    transition: opacity 0.3s ease;
+    overflow-y: auto;
   }
 
-  .hidden {
-    opacity: 0;
-    pointer-events: none;
-    width: 0;
+  h1 {
+    text-align: center;
+    color: #3b82f6;
+    margin: 0 0 10px 0;
   }
 
-  .fullscreen-game {
-    position: fixed !important;
-    top: 0;
-    left: 0;
-    width: 100vw !important;
-    height: 100vh !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    z-index: 9999;
+  h2 {
+    color: #38bdf8;
+    margin-bottom: 10px;
   }
 
-  .fullscreen-btn {
-    margin-top: 10px;
-    padding: 10px 15px;
-    background: #3b82f6;
-    color: white;
-    font-weight: bold;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s;
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    z-index: 10000;
-  }
-
-  .fullscreen-btn:hover {
-    background: #2563eb;
-  }
-
-  @media(max-width: 1000px){
+  @media(max-width: 900px){
     #container {
       flex-direction: column;
-      align-items: center;
     }
     .instructions {
       width: 100%;
+      height: 200px;
     }
   }
 </style>
 </head>
 <body>
-  <h1>Speed Sled</h1>
   <div id="container">
     <div class="game-wrapper" id="gameWrapper">
-      <!-- Use local index.html instead of TurboWarp embed -->
       <iframe id="gameFrame" src="index.html" allowtransparency="true" scrolling="no"></iframe>
-      <button class="fullscreen-btn" id="fullscreenBtn">Fullscreen</button>
     </div>
 
     <div class="instructions" id="instructions">
-      <h2>How to Play</h2>
+      <h1>How to Play</h1>
       <p>Just race and get some good times</p>
       <p>🎮 Player 1: <b>WASD</b></p>
       <p>🎮 Player 2: <b>Arrow Keys</b></p>
@@ -135,43 +98,37 @@
   </div>
 
 <script>
-const fullscreenBtn = document.getElementById('fullscreenBtn');
-const gameWrapper = document.getElementById('gameWrapper');
-const gameFrame = document.getElementById('gameFrame');
-const instructions = document.getElementById('instructions');
-const header = document.querySelector('h1');
-
-let isFullscreen = false;
-
-// Toggle fullscreen mode
-fullscreenBtn.addEventListener('click', () => {
-  isFullscreen = !isFullscreen;
-  if (isFullscreen) {
-    gameWrapper.classList.add('fullscreen-game');
-    instructions.classList.add('hidden');
-    header.style.display = 'none';
-    scaleGame(); // scale to fill window
-  } else {
-    gameWrapper.classList.remove('fullscreen-game');
-    instructions.classList.remove('hidden');
-    header.style.display = 'block';
-    scaleGame(); // scale back to normal
-  }
-});
-
-// Scale the game dynamically based on container or window
 function scaleGame() {
-  const wrapper = isFullscreen ? document.body : gameWrapper.parentElement;
-  const containerWidth = wrapper.clientWidth;
-  const containerHeight = wrapper.clientHeight;
-  const scaleX = containerWidth / 480;
-  const scaleY = containerHeight / 360;
+  const gameWrapper = document.getElementById('gameWrapper');
+  const gameFrame = document.getElementById('gameFrame');
+  const instructions = document.getElementById('instructions');
+
+  // Available width and height for the game
+  const containerWidth = window.innerWidth - instructions.offsetWidth;
+  const containerHeight = window.innerHeight;
+
+  // Original game size
+  const originalWidth = 480;
+  const originalHeight = 360;
+
+  // Scale to fit container while keeping aspect ratio
+  const scaleX = containerWidth / originalWidth;
+  const scaleY = containerHeight / originalHeight;
   const scale = Math.min(scaleX, scaleY);
+
+  // Set wrapper size
+  gameWrapper.style.width = `${originalWidth * scale}px`;
+  gameWrapper.style.height = `${originalHeight * scale}px`;
+
+  // Scale iframe
+  gameFrame.style.width = `${originalWidth}px`;
+  gameFrame.style.height = `${originalHeight}px`;
   gameFrame.style.transform = `scale(${scale})`;
 }
 
-window.addEventListener('resize', scaleGame);
+// Initial scale
 window.addEventListener('load', scaleGame);
+window.addEventListener('resize', scaleGame);
 </script>
 </body>
 </html>
