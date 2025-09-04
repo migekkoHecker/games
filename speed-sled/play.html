@@ -17,50 +17,53 @@
     overflow: hidden;
     display: flex;
     justify-content: center;
-    align-items: stretch;
+    align-items: flex-start;
   }
 
   #container {
     display: flex;
     flex-direction: row;
-    width: 100%;
     height: 100%;
+    width: 100%;
     max-width: 100vw;
     max-height: 100vh;
-    overflow: hidden;
+    padding: 20px;
+    box-sizing: border-box;
   }
 
   .game-wrapper {
-    flex-shrink: 0;
+    position: relative;
+    width: 480px;
+    height: 360px;
     background: #000;
     border-radius: 15px;
     overflow: hidden;
     box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-shrink: 0;
   }
 
   .game-wrapper iframe {
+    width: 480px;
+    height: 360px;
     border: none;
     transform-origin: top left;
+    display: block;
   }
 
   .instructions {
+    margin-left: 20px;
     width: 300px;
     background: rgba(30,41,59,0.85);
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-    flex-shrink: 0;
     overflow-y: auto;
   }
 
   h1 {
-    text-align: center;
+    margin-top: 0;
+    margin-bottom: 15px;
     color: #3b82f6;
-    margin: 0 0 10px 0;
   }
 
   h2 {
@@ -71,10 +74,12 @@
   @media(max-width: 900px){
     #container {
       flex-direction: column;
+      align-items: center;
     }
     .instructions {
       width: 100%;
-      height: 200px;
+      margin-left: 0;
+      margin-top: 15px;
     }
   }
 </style>
@@ -85,7 +90,7 @@
       <iframe id="gameFrame" src="index.html" allowtransparency="true" scrolling="no"></iframe>
     </div>
 
-    <div class="instructions" id="instructions">
+    <div class="instructions">
       <h1>How to Play</h1>
       <p>Just race and get some good times</p>
       <p>🎮 Player 1: <b>WASD</b></p>
@@ -99,36 +104,23 @@
 
 <script>
 function scaleGame() {
-  const gameWrapper = document.getElementById('gameWrapper');
-  const gameFrame = document.getElementById('gameFrame');
-  const instructions = document.getElementById('instructions');
+  const wrapper = document.getElementById('gameWrapper');
+  const iframe = document.getElementById('gameFrame');
 
-  // Available width and height for the game
-  const containerWidth = window.innerWidth - instructions.offsetWidth;
-  const containerHeight = window.innerHeight;
+  const availableWidth = window.innerWidth - 340; // 340 = sidebar width + margin
+  const availableHeight = window.innerHeight - 40; // 40 = some padding
 
-  // Original game size
   const originalWidth = 480;
   const originalHeight = 360;
 
-  // Scale to fit container while keeping aspect ratio
-  const scaleX = containerWidth / originalWidth;
-  const scaleY = containerHeight / originalHeight;
-  const scale = Math.min(scaleX, scaleY);
+  const scaleX = availableWidth / originalWidth;
+  const scaleY = availableHeight / originalHeight;
+  const scale = Math.min(scaleX, scaleY, 1.5); // optional max scale like TurboWarp
 
-  // Set wrapper size
-  gameWrapper.style.width = `${originalWidth * scale}px`;
-  gameWrapper.style.height = `${originalHeight * scale}px`;
-
-  // Scale iframe
-  gameFrame.style.width = `${originalWidth}px`;
-  gameFrame.style.height = `${originalHeight}px`;
-  gameFrame.style.transform = `scale(${scale})`;
+  iframe.style.transform = `scale(${scale})`;
 }
-
-// Initial scale
-window.addEventListener('load', scaleGame);
 window.addEventListener('resize', scaleGame);
+window.addEventListener('load', scaleGame);
 </script>
 </body>
 </html>
