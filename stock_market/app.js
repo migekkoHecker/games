@@ -120,7 +120,7 @@ function tick() {
 
   // Normale stock updates
   for (let [name, info] of Object.entries(stocks)) {
-    const change = Math.random() * 3;
+    const change = Math.random() * 9 + 1; // gives a number from 1 to 10
     if (Math.random() * 100 < info.succes) info.waarde += change;
     else info.waarde -= change;
     if (info.waarde < 0) info.waarde = 0;
