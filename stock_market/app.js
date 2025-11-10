@@ -108,46 +108,62 @@ function updatePortfolio() {
   marketDiv.innerHTML = marketHtml;
 }
 
-// --- Market Events ---
-function marketEvent() {
-  const rand = Math.random();
-  if (rand < 0.02) { // 2% crash
-    log("💥 Market Crash! Alle aandelen dalen!");
-    for (let stock of Object.values(stocks)) {
-      stock.waarde *= 0.7;
-      stock.succes -= 10;
-    }
-  } else if (rand < 0.05) { // 3% boom
-    log("🚀 Market Boom! Alle aandelen stijgen!");
-    for (let stock of Object.values(stocks)) {
-      stock.waarde *= 1.3;
-      stock.succes += 10;
-      if (stock.succes > 100) stock.succes = 100;
-    }
-  } else if (rand < 0.10) { // 5% random news
-    const stockNames = Object.keys(stocks);
-    const randomStock = stocks[stockNames[Math.floor(Math.random() * stockNames.length)]];
-    const upOrDown = Math.random() < 0.5 ? 0.8 : 1.2;
-    randomStock.waarde *= upOrDown;
-    log(`📰 Nieuws voor ${stockNames[stockNames.indexOf(randomStock)]}: waarde ${upOrDown > 1 ? 'stijgt' : 'daalt'}!`);
-  }
-}
-
 // --- Tick Function ---
 function tick() {
-  marketEvent(); // events elke tick
+  // --- Random Market Events ---
+  const rand = Math.random();
 
-  for (let stock of Object.values(stocks)) {
-    stock.succes += (Math.random() * 6) - 3;
-    stock.succes = Math.max(0, Math.min(100, stock.succes));
+  if (rand < 0.02) { // 2% kans op crash
+    log("💥 Market Crash! Aandelen verliezen waarde!");
+    for (let stock of Object.values(stocks)) {
+      stock.waarde *= 0.7;
+    }
+  } else if (rand < 0.04) { // 2% kans op boom
+    log("🚀 Market Boom! Aandelen stijgen fors!");
+    for (let stock of Object.values(stocks)) {
+      stock.waarde *= 1.3;
+    }
+  } else if (rand < 0.06) { // 2% kans op speciaal event
+    const stockNames = Object.keys(stocks);
+    const name = stockNames[Math.floor(Math.random() * stockNames.length)];
+    const stock = stocks[name];
+    stock.eventTicks = 5;
+    stock.eventBoost = (Math.random() < 0.5 ? -1 : 1) * (20 + Math.random() * 10); // ±20–30 boost
+    log(`✨ Speciaal event voor ${name}! Waarde verandert sterk voor 5 ticks (${stock.eventBoost > 0 ? '+' : ''}${Math.round(stock.eventBoost)} per tick)`);
   }
 
-  for (let [name, info] of Object.entries(stocks)) {
-    const change = Math.random() * 5; // 0-5 price change
-    if (Math.random() * 100 < info.succes) info.waarde += change;
-    else info.waarde -= change;
-    if (info.waarde < 0) info.waarde = 0;
+  // --- Succes fluctueert lichtjes ---
+  for (let stock of Object.values(stocks)) {
+    stock.succes += (Math.random() * 6) - 3; // -3 tot +3
+    stock.succes = Math.max(20, Math.min(80, stock.succes)); // tussen 20 en 80
+  }
 
+  // --- Waarde verandert per tick ---
+  for (let [name, info] of Object.entries(stocks)) {
+    // als er een speciaal event actief is
+    if (info.eventTicks && info.eventTicks > 0) {
+      info.waarde += info.eventBoost;
+      info.eventTicks--;
+      if (info.eventTicks === 0) {
+        delete info.eventBoost;
+        log(`✨ Event voor ${name} is voorbij.`);
+      }
+    } else {
+      // normale kansverdeling afhankelijk van waarde
+      let baseChance = info.succes;
+      // Hoe hoger de waarde, hoe kleiner de kans op stijging
+      if (info.waarde > 120) baseChance -= 10;
+      if (info.waarde > 200) baseChance -= 15;
+      if (info.waarde < 50) baseChance += 10;
+      if (info.waarde < 20) baseChance += 20;
+
+      const change = Math.random() * 6; // ±3 gemiddeld
+      if (Math.random() * 100 < baseChance) info.waarde += change;
+      else info.waarde -= change;
+    }
+
+    // Grenzen en verliezen
+    if (info.waarde < 0) info.waarde = 0;
     if (info.waarde < 1) info.lowCount++;
     else info.lowCount = 0;
 
@@ -168,6 +184,7 @@ function tick() {
     if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
 
+  // --- Update chart & portfolio ---
   chart.options.scales.y.max = Math.max(
     100,
     ...Object.values(stocks).map(s => typeof s.waarde === "number" ? s.waarde * 1.1 : 0)
