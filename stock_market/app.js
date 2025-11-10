@@ -232,6 +232,54 @@ function verkoop(aandeel, aantal, speler) {
   } else log(`❌ ${speler} heeft niet genoeg aandelen!`);
 }
 
+// --- Save Game ---
+function saveGame() {
+  const data = {
+    stocks,
+    buffers,
+    players,
+    crashTicksLeft,
+    preCrashTicks,
+  };
+  const json = JSON.stringify(data);
+  // Trigger download
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "stock_market_save.json";
+  a.click();
+  URL.revokeObjectURL(url);
+  log("💾 Game saved!");
+}
+
+// --- Load Game ---
+function loadGame(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      // Restore all data
+      Object.assign(stocks, data.stocks);
+      Object.assign(buffers, data.buffers);
+      Object.assign(players, data.players);
+      crashTicksLeft = data.crashTicksLeft || 0;
+      preCrashTicks = data.preCrashTicks || 0;
+      chart.data.datasets.forEach(ds => {
+        ds.data = buffers[ds.label];
+      });
+      chart.update();
+      updatePortfolio();
+      log("📂 Game loaded!");
+    } catch (err) {
+      log("❌ Failed to load game: " + err);
+    }
+  };
+  reader.readAsText(file);
+}
+
 
 // --- Setup selects ---
 const playerSelect = document.getElementById('player');
