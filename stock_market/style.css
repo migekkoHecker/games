@@ -7,6 +7,7 @@ body {
   align-items: start;
   padding: 20px;
 }
+
 .container {
   max-width: 800px;
   width: 100%;
@@ -15,11 +16,14 @@ body {
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
+
+/* === Controls === */
 #controls {
   margin-top: 1rem;
   display: flex;
   gap: 0.5rem;
 }
+
 button {
   background: #2563eb;
   color: white;
@@ -27,17 +31,51 @@ button {
   padding: 0.5rem 1rem;
   border-radius: 6px;
   cursor: pointer;
+  transition: background 0.2s;
 }
+
 button:hover {
   background: #1d4ed8;
 }
+
+/* === Speed Controls === */
+#speed-controls {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+#speed-controls button {
+  background: #f3f4f6;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#speed-controls button:hover {
+  background: #e5e7eb;
+}
+
+#speed-controls button.active {
+  background: #2563eb;
+  color: white;
+  border-color: #1d4ed8;
+}
+
+/* === Log Box === */
 pre {
   background: #f1f5f9;
   padding: 10px;
   border-radius: 6px;
   height: 150px;
   overflow-y: auto;
+  font-size: 0.9rem;
 }
+
+/* === Portfolio Section === */
 .portfolio {
   margin-top: 1rem;
   background: #f8fafc;
@@ -45,17 +83,19 @@ pre {
   padding: 1rem;
   border: 1px solid #e2e8f0;
 }
+
 .portfolio table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 0.5rem;
 }
+
 .portfolio th, .portfolio td {
   border-bottom: 1px solid #e2e8f0;
   padding: 4px 8px;
   text-align: left;
 }
+
 .portfolio th {
   background: #f1f5f9;
 }
-
