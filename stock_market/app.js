@@ -111,7 +111,6 @@ function updatePortfolio() {
 // --- Tick Function ---
 let crashTicksLeft = 0;
 let preCrashTicks = 0;
-
 function tick() {
   // Tick-gewijze aanpassing van succes
   for (let stock of Object.values(stocks)) {
@@ -146,7 +145,7 @@ function tick() {
     if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
 
-  chart.options.scales.y.max = Math.max(...Object.values(stocks).map(s => s.waarde) * 1.1, 100);
+  chart.options.scales.y.max = Math.max(100, ...Object.values(stocks).map(s => s.waarde * 1.1));
   chart.update();
   updatePortfolio();
 }
