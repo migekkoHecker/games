@@ -1,21 +1,23 @@
+// --- Stocks & Players ---
 const stocks = {
-  "Oenvast BV": { waarde: Math.random() * 90 + 10, succes: 50, color: 'red', lowCount: 0 },
-  "GekkoGames": { waarde: Math.random() * 90 + 10, succes: 50, color: 'blue', lowCount: 0 },
-  "Minecraft": { waarde: Math.random() * 90 + 10, succes: 50, color: 'green', lowCount: 0 },
-  "Pon BV": { waarde: Math.random() * 90 + 10, succes: 50, color: 'orange', lowCount: 0 },
-  "Bombardilo BV": { waarde: Math.random() * 90 + 10, succes: 50, color: 'purple', lowCount: 0 },
+  "Oenvast BV": { waarde: Math.random()*90+10, succes:50, color:'red', lowCount:0 },
+  "GekkoGames": { waarde: Math.random()*90+10, succes:50, color:'blue', lowCount:0 },
+  "Minecraft": { waarde: Math.random()*90+10, succes:50, color:'green', lowCount:0 },
+  "Pon BV": { waarde: Math.random()*90+10, succes:50, color:'orange', lowCount:0 },
+  "Bombardilo BV": { waarde: Math.random()*90+10, succes:50, color:'purple', lowCount:0 },
 };
 
 const players = {
-  "Miguel": { geld: 500, aandelen: {} },
-  "David": { geld: 500, aandelen: {} },
-  "Alejandro": { geld: 500, aandelen: {} },
+  "Miguel": { geld:500, aandelen:{} },
+  "David": { geld:500, aandelen:{} },
+  "Alejandro": { geld:500, aandelen:{} },
 };
 
 const MAX_TICKS = 100;
 const buffers = {};
 for (let s in stocks) buffers[s] = [stocks[s].waarde];
 
+// --- Chart.js Setup ---
 const ctx = document.getElementById('chart').getContext('2d');
 const chart = new Chart(ctx, {
   type: 'line',
@@ -25,18 +27,25 @@ const chart = new Chart(ctx, {
       label: name,
       borderColor: s.color,
       data: buffers[name],
-      tension: 0.2,
-    })),
+      tension: 0.2
+    }))
   },
-  options: { animation: false, scales: { y: { beginAtZero: true } } },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    scales: { y: { beginAtZero:true } }
+  }
 });
 
+// --- Logging ---
 function log(msg) {
   const logBox = document.getElementById('log');
   logBox.textContent += msg + "\n";
   logBox.scrollTop = logBox.scrollHeight;
 }
 
+// --- Portfolio Update ---
 function updatePortfolio() {
   const playerName = document.getElementById('player').value;
   const player = players[playerName];
@@ -58,34 +67,34 @@ function updatePortfolio() {
   div.innerHTML = html;
 }
 
-// === NEW: Apply stock penalties and limits ===
+// --- Tick Function ---
 function tick() {
   for (let [name, info] of Object.entries(stocks)) {
-    // Random movement
-    const change = Math.random() * 10;
-    if (Math.random() * 100 < info.succes) info.waarde += change;
+    // Random value change
+    const change = Math.random()*10;
+    if (Math.random()*100 < info.succes) info.waarde += change;
     else info.waarde -= change;
     if (info.waarde < 0) info.waarde = 0;
 
-    // Track low-value streak
+    // Low-value tracking
     if (info.waarde < 1) info.lowCount++;
     else info.lowCount = 0;
 
-    // After 3 ticks below 1 euro, players lose 2 shares
+    // Penalty: lose 2 shares if low for 3 ticks
     if (info.lowCount >= 3) {
-      for (let playerName in players) {
-        const player = players[playerName];
+      for (let pname in players) {
+        const player = players[pname];
         if (player.aandelen[name] && player.aandelen[name] > 0) {
           const loss = Math.min(2, player.aandelen[name]);
           player.aandelen[name] -= loss;
           if (player.aandelen[name] <= 0) delete player.aandelen[name];
-          log(`⚠️ ${playerName} verloor ${loss}x ${name} (waarde te laag)`);
+          log(`⚠️ ${pname} verloor ${loss}x ${name} (waarde te laag)`);
         }
       }
-      info.lowCount = 0; // reset counter after penalty
+      info.lowCount = 0;
     }
 
-    // Update chart buffers
+    // Update chart buffer
     buffers[name].push(info.waarde);
     if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
@@ -94,16 +103,17 @@ function tick() {
   updatePortfolio();
 }
 
+// --- Buy/Sell Functions ---
 function koop(aandeel, aantal, speler) {
   const stock = stocks[aandeel];
   const player = players[speler];
   const prijs = stock.waarde * aantal;
 
-  // Limit based on stock worth (10 at €50 base)
+  // Limit: 10 at €50
   const maxAllowed = Math.max(1, Math.floor(10 * (50 / stock.waarde)));
   const currentOwned = player.aandelen[aandeel] || 0;
   if (currentOwned + aantal > maxAllowed) {
-    log(`❌ ${speler} kan max ${maxAllowed}x ${aandeel} kopen (limiet o.b.v. waarde).`);
+    log(`❌ ${speler} kan max ${maxAllowed}x ${aandeel} kopen.`);
     return;
   }
 
@@ -126,23 +136,7 @@ function verkoop(aandeel, aantal, speler) {
   } else log(`❌ ${speler} heeft niet genoeg aandelen!`);
 }
 
-// ---- SPEED CONTROL ----
-let currentSpeed = 1000; // default = 1x
-let tickInterval = setInterval(tick, currentSpeed);
-
-function setSpeed(ms) {
-  clearInterval(tickInterval);
-  currentSpeed = ms;
-  tickInterval = setInterval(tick, currentSpeed);
-  document.querySelectorAll("#speed-controls button").forEach(b => b.classList.remove("active"));
-  document.querySelector(`#speed-controls button[data-speed='${ms}']`).classList.add("active");
-}
-
-document.querySelectorAll("#speed-controls button").forEach(btn => {
-  btn.onclick = () => setSpeed(+btn.dataset.speed);
-});
-
-// ---- INITIAL SETUP ----
+// --- Setup ---
 const playerSelect = document.getElementById('player');
 Object.keys(players).forEach(p => {
   const opt = document.createElement('option');
@@ -165,3 +159,6 @@ document.getElementById('sell').onclick = () =>
 
 playerSelect.onchange = updatePortfolio;
 updatePortfolio();
+
+// --- Start Ticker ---
+setInterval(tick, 1000); // 1 tick per second
