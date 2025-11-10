@@ -8,9 +8,9 @@ const stocks = {
 };
 
 const players = {
-  "Miguel": { geld:500, aandelen:{} },
-  "David": { geld:500, aandelen:{} },
-  "Alejandro": { geld:500, aandelen:{} },
+  "Migekko": { geld:500, aandelen:{} },
+  "Davidtjou": { geld:500, aandelen:{} },
+  "4l3jandr0": { geld:500, aandelen:{} },
 };
 
 const MAX_TICKS = 100;
@@ -111,6 +111,7 @@ function tick() {
   chart.update();
   updatePortfolio();
 }
+
 //function koop
 function koop(aandeel, aantal, speler) {
   const stock = stocks[aandeel];
