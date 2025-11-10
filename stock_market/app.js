@@ -108,39 +108,66 @@ function updatePortfolio() {
   marketDiv.innerHTML = marketHtml;
 }
 
+// --- Market Cycle Tracking ---
+let marketCycle = null;
+
 // --- Tick Function ---
 function tick() {
   // --- Random Market Events ---
   const rand = Math.random();
 
-  if (rand < 0.02) { // 2% kans op crash
+  // Market cycle event actief?
+  if (marketCycle) {
+    marketCycle.ticks--;
+    if (marketCycle.phase === 1) {
+      // Bull fase (succes = 80)
+      if (marketCycle.ticks <= 0) {
+        marketCycle.phase = 2;
+        marketCycle.ticks = 90;
+        for (let s of Object.values(stocks)) s.succes = 25;
+        log("📉 Market downturn gestart! Succesratie omlaag naar 25 voor 90 ticks!");
+      }
+    } else if (marketCycle.phase === 2) {
+      // Bear fase (succes = 25)
+      if (marketCycle.ticks <= 0) {
+        marketCycle = null;
+        for (let s of Object.values(stocks)) s.succes = 50;
+        log("🔄 Market cycle voorbij — succesrates terug naar normaal (50).");
+      }
+    }
+  } else if (rand < 0.02) {
     log("💥 Market Crash! Aandelen verliezen waarde!");
-    for (let stock of Object.values(stocks)) {
-      stock.waarde *= 0.7;
-    }
-  } else if (rand < 0.04) { // 2% kans op boom
+    for (let stock of Object.values(stocks)) stock.waarde *= 0.7;
+
+  } else if (rand < 0.04) {
     log("🚀 Market Boom! Aandelen stijgen fors!");
-    for (let stock of Object.values(stocks)) {
-      stock.waarde *= 1.3;
-    }
-  } else if (rand < 0.06) { // 2% kans op speciaal event
+    for (let stock of Object.values(stocks)) stock.waarde *= 1.3;
+
+  } else if (rand < 0.06) {
     const stockNames = Object.keys(stocks);
     const name = stockNames[Math.floor(Math.random() * stockNames.length)];
     const stock = stocks[name];
     stock.eventTicks = 5;
-    stock.eventBoost = (Math.random() < 0.5 ? -1 : 1) * (20 + Math.random() * 10); // ±20–30 boost
+    stock.eventBoost = (Math.random() < 0.5 ? -1 : 1) * (20 + Math.random() * 10);
     log(`✨ Speciaal event voor ${name}! Waarde verandert sterk voor 5 ticks (${stock.eventBoost > 0 ? '+' : ''}${Math.round(stock.eventBoost)} per tick)`);
+
+  } else if (rand < 0.07) {
+    // Nieuw Market Cycle Event (1% kans)
+    marketCycle = { phase: 1, ticks: 30 };
+    for (let s of Object.values(stocks)) s.succes = 80;
+    log("📈 Market Cycle gestart! Succesratie 80 voor 30 ticks, daarna daling!");
   }
 
   // --- Succes fluctueert lichtjes ---
   for (let stock of Object.values(stocks)) {
-    stock.succes += (Math.random() * 6) - 3; // -3 tot +3
-    stock.succes = Math.max(20, Math.min(80, stock.succes)); // tussen 20 en 80
+    if (!marketCycle) {
+      stock.succes += (Math.random() * 6) - 3;
+      stock.succes = Math.max(20, Math.min(80, stock.succes));
+    }
   }
 
   // --- Waarde verandert per tick ---
   for (let [name, info] of Object.entries(stocks)) {
-    // als er een speciaal event actief is
     if (info.eventTicks && info.eventTicks > 0) {
       info.waarde += info.eventBoost;
       info.eventTicks--;
@@ -149,20 +176,17 @@ function tick() {
         log(`✨ Event voor ${name} is voorbij.`);
       }
     } else {
-      // normale kansverdeling afhankelijk van waarde
       let baseChance = info.succes;
-      // Hoe hoger de waarde, hoe kleiner de kans op stijging
       if (info.waarde > 120) baseChance -= 10;
       if (info.waarde > 200) baseChance -= 15;
       if (info.waarde < 50) baseChance += 10;
       if (info.waarde < 20) baseChance += 20;
 
-      const change = Math.random() * 6; // ±3 gemiddeld
+      const change = Math.random() * 10; // ±1–10
       if (Math.random() * 100 < baseChance) info.waarde += change;
       else info.waarde -= change;
     }
 
-    // Grenzen en verliezen
     if (info.waarde < 0) info.waarde = 0;
     if (info.waarde < 1) info.lowCount++;
     else info.lowCount = 0;
@@ -184,7 +208,6 @@ function tick() {
     if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
 
-  // --- Update chart & portfolio ---
   chart.options.scales.y.max = Math.max(
     100,
     ...Object.values(stocks).map(s => typeof s.waarde === "number" ? s.waarde * 1.1 : 0)
