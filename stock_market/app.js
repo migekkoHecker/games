@@ -11,6 +11,7 @@ const players = {
   "Miguel": { geld: 500, aandelen: {} },
   "David": { geld: 500, aandelen: {} },
   "Alejandro": { geld: 500, aandelen: {} },
+  "admin": { geld: 1000, aandelen: {} } // admin gebruiker
 };
 
 const MAX_TICKS = 100;
@@ -34,14 +35,9 @@ const chart = new Chart(ctx, {
     responsive: true,
     maintainAspectRatio: false,
     animation: false,
-    layout: {
-      padding: { left: 50, right: 20, top: 20, bottom: 50 }
-    },
+    layout: { padding: { left: 50, right: 20, top: 20, bottom: 50 } },
     scales: {
-      y: {
-        beginAtZero: true,
-        ticks: { stepSize: 10, callback: v => `$${Math.round(v)}` }
-      },
+      y: { beginAtZero: true, ticks: { stepSize: 10, callback: v => `$${Math.round(v)}` } },
       x: { ticks: { display: false } }
     },
     plugins: {
@@ -84,10 +80,14 @@ function updatePortfolio() {
   html += `</table><p><strong>Totaalwaarde (inclusief verkoopwaarde):</strong> €${Math.round(totalValue)}</p>`;
   div.innerHTML = html;
 
-  // Market tab blijft hetzelfde
+  // Market tab
   const marketDiv = document.getElementById('market');
   let marketHtml = `<h3>Stock Market Info</h3>`;
-  marketHtml += `<table><tr><th>Aandeel</th><th>Waarde</th><th>Owned/Max</th><th>Totaal Marktwaarde</th></tr>`;
+  marketHtml += `<table><tr>
+    <th>Aandeel</th><th>Waarde</th>${playerName === "admin" ? "<th>Succes%</th>" : ""}
+    <th>Owned/Max</th><th>Totaal Marktwaarde</th>
+  </tr>`;
+
   for (let [name, stock] of Object.entries(stocks)) {
     const price = stock.waarde;
     let maxAllowed = Math.round((price / 50) * 10);
@@ -99,6 +99,7 @@ function updatePortfolio() {
     marketHtml += `<tr>
       <td>${name}</td>
       <td>€${Math.round(price)}</td>
+      ${playerName === "admin" ? `<td>${stock.succes.toFixed(2)}%</td>` : ""}
       <td>${totalOwned}/${maxAllowed}</td>
       <td>€${Math.round(totalMarketValue)}</td>
     </tr>`;
@@ -107,10 +108,10 @@ function updatePortfolio() {
   marketDiv.innerHTML = marketHtml;
 }
 
-
 // --- Tick Function ---
 let crashTicksLeft = 0;
 let preCrashTicks = 0;
+
 function tick() {
   // Tick-gewijze aanpassing van succes
   for (let stock of Object.values(stocks)) {
@@ -150,7 +151,7 @@ function tick() {
   updatePortfolio();
 }
 
-
+// --- Buy / Sell ---
 function koop(aandeel, aantal, speler) {
   const stock = stocks[aandeel];
   const player = players[speler];
@@ -164,8 +165,7 @@ function koop(aandeel, aantal, speler) {
   if (player.geld >= prijs) {
     player.geld -= prijs;
     player.aandelen[aandeel] = (player.aandelen[aandeel] || 0) + aantal;
-    stock.succes += 2; // koop verhoogt succes
-    stock.succes = Math.min(stock.succes, 100);
+    stock.succes = Math.min(stock.succes + 2, 100); // koop verhoogt succes
     log(`✅ ${speler} kocht ${aantal}x ${aandeel} voor €${Math.round(prijs)}`);
     updatePortfolio();
   } else log(`❌ ${speler} heeft niet genoeg geld!`);
@@ -178,13 +178,11 @@ function verkoop(aandeel, aantal, speler) {
     if (player.aandelen[aandeel] <= 0) delete player.aandelen[aandeel];
     const opbrengst = stocks[aandeel].waarde * aantal * 0.9;
     player.geld += opbrengst;
-    stocks[aandeel].succes -= 2; // verkoop verlaagt succes
-    stocks[aandeel].succes = Math.max(stocks[aandeel].succes, 0);
+    stocks[aandeel].succes = Math.max(stocks[aandeel].succes - 2, 0); // verkoop verlaagt succes
     log(`💰 ${speler} verkocht ${aantal}x ${aandeel} voor €${Math.round(opbrengst)} (90%)`);
     updatePortfolio();
   } else log(`❌ ${speler} heeft niet genoeg aandelen!`);
 }
-
 
 // --- Save / Load Clipboard ---
 function saveGameToClipboard() {
@@ -214,7 +212,7 @@ function loadGameFromClipboard() {
   }
 }
 
-// Hook buttons
+// --- Hook buttons ---
 document.getElementById('save').onclick = saveGameToClipboard;
 document.getElementById('loadBtn').onclick = loadGameFromClipboard;
 
