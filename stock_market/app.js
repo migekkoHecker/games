@@ -94,9 +94,23 @@ function verkoop(aandeel, aantal, speler) {
   } else log(`${speler} heeft niet genoeg aandelen!`);
 }
 
-setInterval(tick, 900);
+// ---- SPEED CONTROL ----
+let currentSpeed = 1000; // default = 1x
+let tickInterval = setInterval(tick, currentSpeed);
 
-// Populate dropdowns
+function setSpeed(ms) {
+  clearInterval(tickInterval);
+  currentSpeed = ms;
+  tickInterval = setInterval(tick, currentSpeed);
+  document.querySelectorAll("#speed-controls button").forEach(b => b.classList.remove("active"));
+  document.querySelector(`#speed-controls button[data-speed='${ms}']`).classList.add("active");
+}
+
+document.querySelectorAll("#speed-controls button").forEach(btn => {
+  btn.onclick = () => setSpeed(+btn.dataset.speed);
+});
+
+// ---- INITIAL SETUP ----
 const playerSelect = document.getElementById('player');
 Object.keys(players).forEach(p => {
   const opt = document.createElement('option');
