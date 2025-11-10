@@ -225,12 +225,13 @@ function verkoop(aandeel, aantal, speler) {
   if ((player.aandelen[aandeel] || 0) >= aantal) {
     player.aandelen[aandeel] -= aantal;
     if (player.aandelen[aandeel] <= 0) delete player.aandelen[aandeel];
-    const opbrengst = stocks[aandeel].waarde * aantal;
+    const opbrengst = stocks[aandeel].waarde * aantal * 0.9; // only 90%
     player.geld += opbrengst;
-    log(`💰 ${speler} verkocht ${aantal}x ${aandeel} voor €${Math.round(opbrengst)}`);
+    log(`💰 ${speler} verkocht ${aantal}x ${aandeel} voor €${Math.round(opbrengst)} (90% waarde)`);
     updatePortfolio();
   } else log(`❌ ${speler} heeft niet genoeg aandelen!`);
 }
+
 
 // --- Setup selects ---
 const playerSelect = document.getElementById('player');
