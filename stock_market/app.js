@@ -14,7 +14,7 @@ const players = {
   "admin": { geld: 1000, aandelen: {} } // admin gebruiker
 };
 
-const MAX_TICKS = 100;
+const MAX_TICKS = 60;
 const buffers = {};
 for (let s in stocks) buffers[s] = [stocks[s].waarde];
 
