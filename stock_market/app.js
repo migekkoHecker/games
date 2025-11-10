@@ -129,7 +129,7 @@ function updatePortfolio() {
 // --- Tick Function ---
 function tick() {
   // --- Market crash check ---
-  if (Math.random() < 1 / 700) {
+  if (Math.random() < 1 / 200) {
     log("💥 Stock market crash! All stocks are now much riskier!");
     for (let stock of Object.values(stocks)) {
       stock.succes = 25; // reduce success chance
@@ -240,4 +240,4 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 // --- Start Ticker ---
-setInterval(tick, 10);
+setInterval(tick, 1);
