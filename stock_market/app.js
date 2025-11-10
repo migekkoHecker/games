@@ -8,9 +8,9 @@ const stocks = {
 };
 
 const players = {
-  "Migekko": { geld:500, aandelen:{} },
-  "Davidtjou": { geld:500, aandelen:{} },
-  "4lejandr0": { geld:500, aandelen:{} },
+  "Miguel": { geld:500, aandelen:{} },
+  "David": { geld:500, aandelen:{} },
+  "Alejandro": { geld:500, aandelen:{} },
 };
 
 const MAX_TICKS = 100;
@@ -34,9 +34,7 @@ const chart = new Chart(ctx, {
     responsive: false,
     maintainAspectRatio: false,
     animation: false,
-    scales: {
-      y: { beginAtZero: true }
-    }
+    scales: { y: { beginAtZero: true } }
   }
 });
 
@@ -117,7 +115,6 @@ function tick() {
     if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
 
-  // Dynamic Y-axis scaling (only inside fixed box)
   chart.options.scales.y.max = Math.max(...Object.values(stocks).map(s => s.waarde))*1.1;
   chart.update();
   updatePortfolio();
@@ -198,4 +195,4 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 // --- Start Ticker ---
-setInterval(tick, 1000); // 1 tick per second
+setInterval(tick, 1000);
