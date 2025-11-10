@@ -128,6 +128,14 @@ function updatePortfolio() {
 
 // --- Tick Function ---
 function tick() {
+  // --- Market crash check ---
+  if (Math.random() < 1 / 700) {
+    log("💥 Stock market crash! All stocks are now much riskier!");
+    for (let stock of Object.values(stocks)) {
+      stock.succes = 25; // reduce success chance
+    }
+  }
+
   for (let [name, info] of Object.entries(stocks)) {
     const change = Math.random() * 10;
     if (Math.random() * 100 < info.succes) info.waarde += change;
@@ -160,6 +168,7 @@ function tick() {
   chart.update();
   updatePortfolio();
 }
+
 
 // --- Buy / Sell ---
 function koop(aandeel, aantal, speler) {
@@ -231,4 +240,4 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 // --- Start Ticker ---
-setInterval(tick, 1);
+setInterval(tick, 10);
