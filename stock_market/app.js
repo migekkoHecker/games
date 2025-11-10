@@ -103,9 +103,10 @@ function tick() {
     if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
 
-  // Dynamic y-axis scaling
-  const maxValue = Math.max(...Object.values(stocks).map(s => s.waarde)) * 1.1;
-  chart.options.scales.y.max = maxValue;
+  // Dynamic y-axis scaling that only grows
+  const currentMax = chart.options.scales.y.max || 100;
+  const newMax = Math.max(...Object.values(stocks).map(s => s.waarde)) * 1.1;
+  chart.options.scales.y.max = Math.max(currentMax, newMax);
 
   chart.update();
   updatePortfolio();
