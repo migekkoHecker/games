@@ -60,6 +60,7 @@ let marketCycle = {
   stage: 0,      // 0=inactive, 1=80%, 2=25%, 3=50%
   ticksLeft: 0
 };
+
 function startMarketCycle() {
   marketCycle.active = true;
   marketCycle.stage = 1;
@@ -126,6 +127,11 @@ function updatePortfolio() {
 function tick() {
   const rand = Math.random();
 
+  // --- Random Market Cycle trigger (0.1% chance per tick) ---
+  if (!marketCycle.active && Math.random() < 0.001) {
+      startMarketCycle();
+  }
+
   // Crash (-10%) & Boom (+10%)
   if (rand < 0.02) { 
     log("💥 Market Crash! Aandelen verliezen 10% waarde!");
@@ -134,13 +140,14 @@ function tick() {
     log("🚀 Market Boom! Aandelen stijgen 10%!");
     for (let stock of Object.values(stocks)) stock.waarde *= 1.1;
   } else if (rand < 0.06) {
-    // Special Stock Event (5 ticks, ±20–30 per tick)
+    // Special Stock Event (5 ticks, ±20–30 per tick, each tick random)
     const stockNames = Object.keys(stocks);
     const name = stockNames[Math.floor(Math.random() * stockNames.length)];
     const stock = stocks[name];
     stock.eventTicks = 5;
-    stock.eventBoost = (Math.random() < 0.5 ? 1 : -1) * (20 + Math.random() * 10);
-    log(`✨ Speciaal event voor ${name}! Waarde verandert ${stock.eventBoost > 0 ? '+' : ''}${Math.round(stock.eventBoost)} per tick voor 5 ticks.`);
+    stock.eventBoosts = Array.from({length: 5}, () => (Math.random() < 0.5 ? -1 : 1) * (20 + Math.random() * 10));
+    stock.eventIndex = 0;
+    log(`✨ Speciaal event voor ${name}! Waarde verandert 5 ticks, random ±20–30 per tick.`);
   }
 
   // --- Market Cycle Event Handling ---
@@ -171,10 +178,13 @@ function tick() {
   for (let [name, info] of Object.entries(stocks)) {
     // Special stock event
     if (info.eventTicks && info.eventTicks > 0) {
-      info.waarde += info.eventBoost;
+      const boost = info.eventBoosts[info.eventIndex];
+      info.waarde += boost;
+      info.eventIndex++;
       info.eventTicks--;
       if (info.eventTicks === 0) {
-        delete info.eventBoost;
+        delete info.eventBoosts;
+        delete info.eventIndex;
         log(`✨ Event voor ${name} is voorbij.`);
       }
     } else {
@@ -322,7 +332,8 @@ window.triggerSpecial = () => {
   const name = stockNames[Math.floor(Math.random() * stockNames.length)];
   const stock = stocks[name];
   stock.eventTicks = 5;
-  stock.eventBoost = (Math.random() < 0.5 ? 1 : -1) * (20 + Math.random() * 10);
-  log(`✨ Manual Special Event voor ${name}: ${stock.eventBoost > 0 ? '+' : ''}${Math.round(stock.eventBoost)} per tick`);
+  stock.eventBoosts = Array.from({length: 5}, () => (Math.random() < 0.5 ? -1 : 1) * (20 + Math.random() * 10));
+  stock.eventIndex = 0;
+  log(`✨ Manual Special Event voor ${name}: 5 ticks, random ±20–30 per tick`);
 };
 window.triggerMarketCycle = startMarketCycle;
