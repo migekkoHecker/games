@@ -127,15 +127,30 @@ function updatePortfolio() {
 }
 
 // --- Tick Function ---
+let crashTicksLeft = 0; // global variable to track crash duration
+
 function tick() {
   // --- Market crash check ---
-  if (Math.random() < 1 / 1000) {
+  if (crashTicksLeft === 0 && Math.random() < 1 / 700) {
     log("💥 Stock market crash! All stocks are now much riskier!");
     for (let stock of Object.values(stocks)) {
-      stock.succes = 35; // reduce success chance
+      stock.succes = 25; // reduce success chance
+    }
+    crashTicksLeft = 20; // crash lasts 20 ticks
+  }
+
+  // --- If crash ongoing, decrement counter ---
+  if (crashTicksLeft > 0) {
+    crashTicksLeft--;
+    if (crashTicksLeft === 0) {
+      log("📈 Market recovers! Stock succes chances restored.");
+      for (let stock of Object.values(stocks)) {
+        stock.succes = 50; // restore normal succes
+      }
     }
   }
 
+  // --- Normal stock updates ---
   for (let [name, info] of Object.entries(stocks)) {
     const change = Math.random() * 10;
     if (Math.random() * 100 < info.succes) info.waarde += change;
