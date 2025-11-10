@@ -32,12 +32,12 @@ const chart = new Chart(ctx, {
   },
   options: {
     responsive: true,
-    maintainAspectRatio: false, // allows fixed canvas height
+    maintainAspectRatio: false,
     animation: false,
     scales: {
       y: {
         beginAtZero: true,
-        ticks: { callback: v => v.toFixed(0) } // optional rounding
+        ticks: { callback: v => v.toFixed(0) }
       }
     }
   }
@@ -75,7 +75,6 @@ function updatePortfolio() {
 // --- Tick Function ---
 function tick() {
   for (let [name, info] of Object.entries(stocks)) {
-    // Random value change
     const change = Math.random() * 10;
     if (Math.random() * 100 < info.succes) info.waarde += change;
     else info.waarde -= change;
@@ -85,7 +84,7 @@ function tick() {
     if (info.waarde < 1) info.lowCount++;
     else info.lowCount = 0;
 
-    // Penalty: lose 2 shares if low for 3 ticks
+    // Penalty for low stock
     if (info.lowCount >= 3) {
       for (let pname in players) {
         const player = players[pname];
@@ -170,4 +169,4 @@ playerSelect.onchange = updatePortfolio;
 updatePortfolio();
 
 // --- Start Ticker ---
-setInterval(tick, 1000); // 1 tick per second
+setInterval(tick, 1000);
