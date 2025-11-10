@@ -50,7 +50,7 @@ function log(msg) {
   logBox.scrollTop = logBox.scrollHeight;
 }
 
-// --- Portfolio Update ---
+// --- Portfolio ---
 function updatePortfolio() {
   const playerName = document.getElementById('player').value;
   const player = players[playerName];
@@ -72,54 +72,71 @@ function updatePortfolio() {
   div.innerHTML = html;
 }
 
+// --- Market Info ---
+function updateMarket() {
+  const div = document.getElementById('market');
+  let html = `<h3>Stock Market Info</h3>`;
+  html += `<table><tr><th>Stock</th><th>Current Price</th><th>Total Owned</th><th>Max Allowed</th><th>Base Price</th></tr>`;
+  for (let [name, stock] of Object.entries(stocks)) {
+    const totalOwned = Object.values(players).reduce((sum, p) => sum + (p.aandelen[name]||0), 0);
+    // Global max based on price
+    const effectivePrice = Math.max(stock.waarde,10);
+    let maxAllowed;
+    if (effectivePrice <= 10) maxAllowed = 2;
+    else if (effectivePrice <= 50) maxAllowed = 10;
+    else if (effectivePrice <= 100) maxAllowed = 20;
+    else if (effectivePrice <= 200) maxAllowed = 40;
+    else maxAllowed = 50;
+    html += `<tr><td>${name}</td><td>€${stock.waarde.toFixed(2)}</td><td>${totalOwned}</td><td>${maxAllowed}</td><td>€${stock.waarde.toFixed(2)}</td></tr>`;
+  }
+  html += `</table>`;
+  div.innerHTML = html;
+}
+
 // --- Tick Function ---
 function tick() {
   for (let [name, info] of Object.entries(stocks)) {
-    const change = Math.random() * 10;
-    if (Math.random() * 100 < info.succes) info.waarde += change;
+    const change = Math.random()*10;
+    if (Math.random()*100 < info.succes) info.waarde += change;
     else info.waarde -= change;
     if (info.waarde < 0) info.waarde = 0;
 
-    // Low-value tracking
     if (info.waarde < 1) info.lowCount++;
     else info.lowCount = 0;
 
-    // Penalty for low stock
     if (info.lowCount >= 3) {
       for (let pname in players) {
         const player = players[pname];
         if (player.aandelen[name] && player.aandelen[name] > 0) {
           const loss = Math.min(2, player.aandelen[name]);
           player.aandelen[name] -= loss;
-          if (player.aandelen[name] <= 0) delete player.aandelen[name];
+          if (player.aandelen[name]<=0) delete player.aandelen[name];
           log(`⚠️ ${pname} verloor ${loss}x ${name} (waarde te laag)`);
         }
       }
       info.lowCount = 0;
     }
 
-    // Update chart buffer
     buffers[name].push(info.waarde);
     if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
 
-  // Dynamic y-axis scaling that only grows
+  // Dynamic y-axis scaling
   const currentMax = chart.options.scales.y.max || 100;
-  const newMax = Math.max(...Object.values(stocks).map(s => s.waarde)) * 1.1;
-  chart.options.scales.y.max = Math.max(currentMax, newMax);
+  const newMax = Math.max(...Object.values(stocks).map(s=>s.waarde))*1.1;
+  chart.options.scales.y.max = Math.max(currentMax,newMax);
 
   chart.update();
   updatePortfolio();
+  updateMarket();
 }
 
-//function koop
-function koop(aandeel, aantal, speler) {
+// --- Buy/Sell ---
+function koop(aandeel,aantal,speler){
   const stock = stocks[aandeel];
   const player = players[speler];
-  const prijs = stock.waarde * aantal;
-
-  // Limit calculation with minimum price
-  const effectivePrice = Math.max(stock.waarde, 10);
+  const prijs = stock.waarde*aantal;
+  const effectivePrice = Math.max(stock.waarde,10);
   let maxAllowed;
   if (effectivePrice <= 10) maxAllowed = 2;
   else if (effectivePrice <= 50) maxAllowed = 10;
@@ -127,59 +144,56 @@ function koop(aandeel, aantal, speler) {
   else if (effectivePrice <= 200) maxAllowed = 40;
   else maxAllowed = 50;
 
-  // Total owned globally
-  let totalOwned = 0;
-  for (let p in players) totalOwned += players[p].aandelen[aandeel] || 0;
+  const totalOwned = Object.values(players).reduce((sum,p)=>sum+(p.aandelen[aandeel]||0),0);
 
-  if (totalOwned + aantal > maxAllowed) {
-    log(`❌ ${speler} kan max ${maxAllowed}x ${aandeel} kopen (globaal).`);
-    return;
-  }
-
-  if (player.geld >= prijs) {
+  if(totalOwned+aantal>maxAllowed){ log(`❌ ${speler} kan max ${maxAllowed}x ${aandeel} kopen (globaal)`); return; }
+  if(player.geld>=prijs){ 
     player.geld -= prijs;
-    player.aandelen[aandeel] = (player.aandelen[aandeel] || 0) + aantal;
+    player.aandelen[aandeel] = (player.aandelen[aandeel]||0)+aantal;
     log(`✅ ${speler} kocht ${aantal}x ${aandeel} voor €${prijs.toFixed(2)}`);
     updatePortfolio();
-  } else log(`❌ ${speler} heeft niet genoeg geld!`);
+    updateMarket();
+  }else log(`❌ ${speler} heeft niet genoeg geld!`);
 }
 
-
-
-function verkoop(aandeel, aantal, speler) {
+function verkoop(aandeel,aantal,speler){
   const player = players[speler];
-  if ((player.aandelen[aandeel] || 0) >= aantal) {
-    player.aandelen[aandeel] -= aantal;
-    const opbrengst = stocks[aandeel].waarde * aantal;
-    player.geld += opbrengst;
+  if((player.aandelen[aandeel]||0)>=aantal){
+    player.aandelen[aandeel]-=aantal;
+    const opbrengst = stocks[aandeel].waarde*aantal;
+    player.geld+=opbrengst;
     log(`💰 ${speler} verkocht ${aantal}x ${aandeel} voor €${opbrengst.toFixed(2)}`);
     updatePortfolio();
-  } else log(`❌ ${speler} heeft niet genoeg aandelen!`);
+    updateMarket();
+  }else log(`❌ ${speler} heeft niet genoeg aandelen!`);
 }
 
 // --- Setup ---
 const playerSelect = document.getElementById('player');
-Object.keys(players).forEach(p => {
-  const opt = document.createElement('option');
-  opt.value = p; opt.textContent = p;
-  playerSelect.append(opt);
+Object.keys(players).forEach(p=>{
+  const opt=document.createElement('option'); opt.value=p; opt.textContent=p; playerSelect.append(opt);
 });
-
 const stockSelect = document.getElementById('stock');
-Object.keys(stocks).forEach(s => {
-  const opt = document.createElement('option');
-  opt.value = s; opt.textContent = s;
-  stockSelect.append(opt);
+Object.keys(stocks).forEach(s=>{
+  const opt=document.createElement('option'); opt.value=s; opt.textContent=s; stockSelect.append(opt);
 });
 
-document.getElementById('buy').onclick = () =>
-  koop(stockSelect.value, +document.getElementById('amount').value, playerSelect.value);
-
-document.getElementById('sell').onclick = () =>
-  verkoop(stockSelect.value, +document.getElementById('amount').value, playerSelect.value);
+document.getElementById('buy').onclick = ()=> koop(stockSelect.value,+document.getElementById('amount').value,playerSelect.value);
+document.getElementById('sell').onclick = ()=> verkoop(stockSelect.value,+document.getElementById('amount').value,playerSelect.value);
 
 playerSelect.onchange = updatePortfolio;
 updatePortfolio();
+updateMarket();
+
+// --- Tabs ---
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.onclick=()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".tab-content").forEach(tc=>tc.style.display="none");
+    document.getElementById(btn.dataset.tab).style.display="block";
+  }
+});
 
 // --- Start Ticker ---
-setInterval(tick, 1000);
+setInterval(tick,1000);
