@@ -11,7 +11,7 @@ const players = {
   "Miguel": { geld: 500, aandelen: {} },
   "David": { geld: 500, aandelen: {} },
   "Alejandro": { geld: 500, aandelen: {} },
-  "admin": { geld: 1000000, aandelen: {} } // admin gebruiker
+  "admin": { geld: 1000000, aandelen: {} }
 };
 
 const MAX_TICKS = 60;
@@ -108,19 +108,42 @@ function updatePortfolio() {
   marketDiv.innerHTML = marketHtml;
 }
 
+// --- Market Events ---
+function marketEvent() {
+  const rand = Math.random();
+  if (rand < 0.02) { // 2% crash
+    log("💥 Market Crash! Alle aandelen dalen!");
+    for (let stock of Object.values(stocks)) {
+      stock.waarde *= 0.7;
+      stock.succes -= 10;
+    }
+  } else if (rand < 0.05) { // 3% boom
+    log("🚀 Market Boom! Alle aandelen stijgen!");
+    for (let stock of Object.values(stocks)) {
+      stock.waarde *= 1.3;
+      stock.succes += 10;
+      if (stock.succes > 100) stock.succes = 100;
+    }
+  } else if (rand < 0.10) { // 5% random news
+    const stockNames = Object.keys(stocks);
+    const randomStock = stocks[stockNames[Math.floor(Math.random() * stockNames.length)]];
+    const upOrDown = Math.random() < 0.5 ? 0.8 : 1.2;
+    randomStock.waarde *= upOrDown;
+    log(`📰 Nieuws voor ${stockNames[stockNames.indexOf(randomStock)]}: waarde ${upOrDown > 1 ? 'stijgt' : 'daalt'}!`);
+  }
+}
+
 // --- Tick Function ---
-let crashTicksLeft = 0;
-let preCrashTicks = 0;
 function tick() {
-  // Tick-gewijze aanpassing van succes
+  marketEvent(); // events elke tick
+
   for (let stock of Object.values(stocks)) {
-    stock.succes += (Math.random() * 6) - 3; // -3 tot +3
+    stock.succes += (Math.random() * 6) - 3;
     stock.succes = Math.max(0, Math.min(100, stock.succes));
   }
 
-  // Normale stock updates
   for (let [name, info] of Object.entries(stocks)) {
-    const change = Math.random() * 10 + 1; // gives a number from 1 to 10
+    const change = Math.random() * 10 + 1; // 1-10 price change
     if (Math.random() * 100 < info.succes) info.waarde += change;
     else info.waarde -= change;
     if (info.waarde < 0) info.waarde = 0;
@@ -145,7 +168,6 @@ function tick() {
     if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
 
-  // Fixed y-axis scaling
   chart.options.scales.y.max = Math.max(
     100,
     ...Object.values(stocks).map(s => typeof s.waarde === "number" ? s.waarde * 1.1 : 0)
@@ -168,7 +190,7 @@ function koop(aandeel, aantal, speler) {
   if (player.geld >= prijs) {
     player.geld -= prijs;
     player.aandelen[aandeel] = (player.aandelen[aandeel] || 0) + aantal;
-    stock.succes = Math.min(stock.succes + 2, 100); // koop verhoogt succes
+    stock.succes = Math.min(stock.succes + 2, 100);
     log(`✅ ${speler} kocht ${aantal}x ${aandeel} voor €${Math.round(prijs)}`);
     updatePortfolio();
   } else log(`❌ ${speler} heeft niet genoeg geld!`);
@@ -181,19 +203,17 @@ function verkoop(aandeel, aantal, speler) {
     if (player.aandelen[aandeel] <= 0) delete player.aandelen[aandeel];
     const opbrengst = stocks[aandeel].waarde * aantal * 0.9;
     player.geld += opbrengst;
-    stocks[aandeel].succes = Math.max(stocks[aandeel].succes - 2, 0); // verkoop verlaagt succes
+    stocks[aandeel].succes = Math.max(stocks[aandeel].succes - 2, 0);
     log(`💰 ${speler} verkocht ${aantal}x ${aandeel} voor €${Math.round(opbrengst)} (90%)`);
     updatePortfolio();
   } else log(`❌ ${speler} heeft niet genoeg aandelen!`);
 }
 
-// --- Save / Load Clipboard ---
+// --- Save / Load ---
 function saveGameToClipboard() {
-  const data = { stocks, buffers, players, crashTicksLeft, preCrashTicks };
+  const data = { stocks, buffers, players };
   const json = JSON.stringify(data, null, 2);
-  navigator.clipboard.writeText(json)
-    .then(() => log("💾 Game saved to clipboard! Paste it somewhere safe."))
-    .catch(err => log("❌ Failed to copy save: " + err));
+  navigator.clipboard.writeText(json).then(() => log("💾 Game saved to clipboard!"));
 }
 
 function loadGameFromClipboard() {
@@ -204,8 +224,6 @@ function loadGameFromClipboard() {
     Object.assign(stocks, data.stocks);
     Object.assign(buffers, data.buffers);
     Object.assign(players, data.players);
-    crashTicksLeft = data.crashTicksLeft || 0;
-    preCrashTicks = data.preCrashTicks || 0;
     chart.data.datasets.forEach(ds => ds.data = buffers[ds.label]);
     chart.update();
     updatePortfolio();
@@ -215,11 +233,10 @@ function loadGameFromClipboard() {
   }
 }
 
-// --- Hook buttons ---
+// --- Hooks ---
 document.getElementById('save').onclick = saveGameToClipboard;
 document.getElementById('loadBtn').onclick = loadGameFromClipboard;
 
-// --- Setup selects ---
 const playerSelect = document.getElementById('player');
 Object.keys(players).forEach(p => {
   const opt = document.createElement('option');
@@ -243,7 +260,6 @@ document.getElementById('sell').onclick = () =>
 playerSelect.onchange = updatePortfolio;
 updatePortfolio();
 
-// --- Tabs ---
 document.querySelectorAll('.tab').forEach(tab => {
   tab.onclick = () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -253,5 +269,5 @@ document.querySelectorAll('.tab').forEach(tab => {
   };
 });
 
-// --- Start Ticker ---
+// --- Start ticker ---
 setInterval(tick, 1000);
