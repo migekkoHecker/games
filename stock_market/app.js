@@ -31,25 +31,46 @@ const chart = new Chart(ctx, {
     }))
   },
   options: {
-    responsive: false,
+    responsive: true,
     maintainAspectRatio: false,
     animation: false,
-    layout: { padding: { left: 50, right: 20, top: 20, bottom: 20 } },
+    layout: {
+      padding: {
+        left: 50,
+        right: 20,
+        top: 20,
+        bottom: 50
+      }
+    },
     scales: {
       y: {
         beginAtZero: true,
-        ticks: { font: { size: 14 }, callback: value => Math.round(value) },
-        suggestedMin: 0,
-        suggestedMax: 100
+        ticks: {
+          stepSize: 10,
+          callback: v => `$${Math.round(v)}` // round values
+        }
       },
-      x: { ticks: { font: { size: 12 } } }
+      x: {
+        ticks: { display: false } // optional: hide x labels if crowded
+      }
     },
     plugins: {
-      legend: { position: 'right', labels: { font: { size: 14 }, boxWidth: 20 } },
-      title: { display: true, text: 'Stock Prices', font: { size: 16 } }
+      legend: {
+        display: true,
+        position: 'bottom', // move legend below chart
+        labels: {
+          boxWidth: 15,
+          padding: 10
+        }
+      },
+      title: {
+        display: true,
+        text: 'Stock Prices'
+      }
     }
   }
 });
+
 
 // --- Logging ---
 function log(msg) {
