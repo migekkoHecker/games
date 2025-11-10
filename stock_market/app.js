@@ -4,13 +4,13 @@ const stocks = {
   "GekkoGames": { waarde: Math.random() * 90 + 10, succes: 50, color: 'blue', lowCount: 0 },
   "Minecraft": { waarde: Math.random() * 90 + 10, succes: 50, color: 'green', lowCount: 0 },
   "Pon BV": { waarde: Math.random() * 90 + 10, succes: 50, color: 'orange', lowCount: 0 },
-  "Bombardilo BV": { waarde: Math.random() * 90 + 10, succes: 50, color: 'purple', lowCount: 0 }
+  "Bombardilo BV": { waarde: Math.random() * 90 + 10, succes: 50, color: 'purple', lowCount: 0 },
 };
 
 const players = {
   "Miguel": { geld: 500, aandelen: {} },
   "David": { geld: 500, aandelen: {} },
-  "Alejandro": { geld: 500, aandelen: {} }
+  "Alejandro": { geld: 500, aandelen: {} },
 };
 
 const MAX_TICKS = 100;
@@ -23,21 +23,27 @@ const chart = new Chart(ctx, {
   type: 'line',
   data: {
     labels: Array(MAX_TICKS).fill(""),
-    datasets: Object.entries(stocks).map(([name, s]) => {
-      return {
-        label: name,
-        borderColor: s.color,
-        data: buffers[name],
-        tension: 0.2
-      };
-    })
+    datasets: Object.entries(stocks).map(([name, s]) => ({
+      label: name,
+      borderColor: s.color,
+      data: buffers[name],
+      tension: 0.2
+    }))
   },
   options: {
     responsive: false,
     maintainAspectRatio: false,
     animation: false,
     scales: {
-      y: { beginAtZero: true }
+      y: {
+        beginAtZero: true,
+        ticks: { font: { size: 14 } }  // readable
+      },
+      x: { ticks: { font: { size: 12 } } }
+    },
+    plugins: {
+      legend: { labels: { font: { size: 14 } } },
+      title: { display: true, text: 'Stock Prices', font: { size: 16 } }
     }
   }
 });
@@ -94,6 +100,7 @@ function tick() {
     else info.waarde -= change;
     if (info.waarde < 0) info.waarde = 0;
 
+    // Low value tracking
     if (info.waarde < 1) info.lowCount++;
     else info.lowCount = 0;
 
@@ -114,9 +121,7 @@ function tick() {
     if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
 
-  // Dynamic y-axis scaling
-  const maxValue = Math.max(...Object.values(stocks).map(s => s.waarde)) * 1.1;
-  chart.options.scales.y.max = maxValue;
+  chart.options.scales.y.max = Math.max(...Object.values(stocks).map(s => s.waarde)) * 1.1;
   chart.update();
   updatePortfolio();
 }
