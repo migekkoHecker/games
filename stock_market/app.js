@@ -316,7 +316,7 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 // --- Start ticker ---
-setInterval(tick, 1000);
+setInterval(tick, 10);
 
 // --- Console Triggers ---
 window.triggerCrash = () => {
