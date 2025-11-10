@@ -37,6 +37,27 @@ function log(msg) {
   logBox.scrollTop = logBox.scrollHeight;
 }
 
+function updatePortfolio() {
+  const playerName = document.getElementById('player').value;
+  const player = players[playerName];
+  const div = document.getElementById('portfolio');
+
+  let totalValue = player.geld;
+  let html = `<h3>${playerName}'s Rekening</h3>`;
+  html += `<p><strong>Geld:</strong> €${player.geld.toFixed(2)}</p>`;
+  html += `<table><tr><th>Aandeel</th><th>Aantal</th><th>Waarde/stuk</th><th>Totaal</th></tr>`;
+
+  for (let [aandeel, aantal] of Object.entries(player.aandelen)) {
+    const waarde = stocks[aandeel].waarde;
+    const totaal = aantal * waarde;
+    totalValue += totaal;
+    html += `<tr><td>${aandeel}</td><td>${aantal}</td><td>€${waarde.toFixed(2)}</td><td>€${totaal.toFixed(2)}</td></tr>`;
+  }
+
+  html += `</table><p><strong>Totaalwaarde:</strong> €${totalValue.toFixed(2)}</p>`;
+  div.innerHTML = html;
+}
+
 function tick() {
   for (let [name, info] of Object.entries(stocks)) {
     const change = Math.random() * 10;
@@ -47,6 +68,7 @@ function tick() {
     if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
   chart.update();
+  updatePortfolio();
 }
 
 function koop(aandeel, aantal, speler) {
@@ -57,6 +79,7 @@ function koop(aandeel, aantal, speler) {
     player.geld -= prijs;
     player.aandelen[aandeel] = (player.aandelen[aandeel] || 0) + aantal;
     log(`${speler} kocht ${aantal}x ${aandeel} voor €${prijs.toFixed(2)}`);
+    updatePortfolio();
   } else log(`${speler} heeft niet genoeg geld!`);
 }
 
@@ -67,6 +90,7 @@ function verkoop(aandeel, aantal, speler) {
     const opbrengst = stocks[aandeel].waarde * aantal;
     player.geld += opbrengst;
     log(`${speler} verkocht ${aantal}x ${aandeel} voor €${opbrengst.toFixed(2)}`);
+    updatePortfolio();
   } else log(`${speler} heeft niet genoeg aandelen!`);
 }
 
@@ -92,3 +116,6 @@ document.getElementById('buy').onclick = () =>
 
 document.getElementById('sell').onclick = () =>
   verkoop(stockSelect.value, +document.getElementById('amount').value, playerSelect.value);
+
+playerSelect.onchange = updatePortfolio;
+updatePortfolio();
