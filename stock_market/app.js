@@ -143,7 +143,7 @@ function tick() {
   }
 
   for (let [name, info] of Object.entries(stocks)) {
-    const change = Math.random() * 10 + 1; // 1-10 price change
+    const change = Math.random() * 5; // 0-5 price change
     if (Math.random() * 100 < info.succes) info.waarde += change;
     else info.waarde -= change;
     if (info.waarde < 0) info.waarde = 0;
