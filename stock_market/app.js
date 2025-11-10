@@ -280,6 +280,15 @@ function loadGame(event) {
   reader.readAsText(file);
 }
 
+// Save / Load Buttons
+document.getElementById('save').onclick = saveGame;
+
+document.getElementById('loadBtn').onclick = () => {
+  document.getElementById('load').click();
+};
+
+document.getElementById('load').onchange = loadGame;
+
 
 // --- Setup selects ---
 const playerSelect = document.getElementById('player');
