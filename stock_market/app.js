@@ -143,12 +143,12 @@ function tick() {
       for (let stock of Object.values(stocks)) {
         stock.succes = 25; // reduce success chance
       }
-      crashTicksLeft = 20; // crash lasts 20 ticks
+      crashTicksLeft = 90; // crash lasts 20 ticks
     }
   } else if (crashTicksLeft === 0 && Math.random() < 1 / 700) {
     // 1/700 chance to start pre-crash period
     log("⚡ Pre-crash boom! Stocks are very likely to rise for a short period...");
-    preCrashTicks = 10; // 10 ticks of succes 70%
+    preCrashTicks = 30; // 10 ticks of succes 70%
   }
 
   // --- If crash ongoing, decrement counter ---
@@ -267,4 +267,4 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 // --- Start Ticker ---
-setInterval(tick, 900);
+setInterval(tick, 1000);
