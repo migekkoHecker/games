@@ -132,7 +132,7 @@ function tick() {
   if (Math.random() < 1 / 1000) {
     log("💥 Stock market crash! All stocks are now much riskier!");
     for (let stock of Object.values(stocks)) {
-      stock.succes = 25; // reduce success chance
+      stock.succes = 35; // reduce success chance
     }
   }
 
