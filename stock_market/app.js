@@ -231,4 +231,4 @@ document.querySelectorAll('.tab').forEach(tab => {
 });
 
 // --- Start Ticker ---
-setInterval(tick, 10);
+setInterval(tick, 1);
