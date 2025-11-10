@@ -127,16 +127,28 @@ function updatePortfolio() {
 }
 
 // --- Tick Function ---
-let crashTicksLeft = 0; // global variable to track crash duration
+let crashTicksLeft = 0;    // crash duration
+let preCrashTicks = 0;     // pre-crash period
 
 function tick() {
-  // --- Market crash check ---
-  if (crashTicksLeft === 0 && Math.random() < 1 / 700) {
-    log("💥 Stock market crash! All stocks are now much riskier!");
+  // --- Pre-crash period ---
+  if (preCrashTicks > 0) {
+    preCrashTicks--;
     for (let stock of Object.values(stocks)) {
-      stock.succes = 25; // reduce success chance
+      stock.succes = 70; // temporarily more likely to go up
     }
-    crashTicksLeft = 20; // crash lasts 20 ticks
+    if (preCrashTicks === 0) {
+      // After pre-crash period, trigger the crash
+      log("💥 Stock market crash begins! All stocks are now much riskier!");
+      for (let stock of Object.values(stocks)) {
+        stock.succes = 25; // reduce success chance
+      }
+      crashTicksLeft = 20; // crash lasts 20 ticks
+    }
+  } else if (crashTicksLeft === 0 && Math.random() < 1 / 700) {
+    // 1/700 chance to start pre-crash period
+    log("⚡ Pre-crash boom! Stocks are very likely to rise for a short period...");
+    preCrashTicks = 10; // 10 ticks of succes 70%
   }
 
   // --- If crash ongoing, decrement counter ---
@@ -152,7 +164,7 @@ function tick() {
 
   // --- Normal stock updates ---
   for (let [name, info] of Object.entries(stocks)) {
-    const change = Math.random() * 10;
+    const change = Math.random() * 3; // smaller steps for smoother movement
     if (Math.random() * 100 < info.succes) info.waarde += change;
     else info.waarde -= change;
     if (info.waarde < 0) info.waarde = 0;
