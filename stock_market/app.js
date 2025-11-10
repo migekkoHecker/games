@@ -11,7 +11,7 @@ const players = {
   "Miguel": { geld: 500, aandelen: {} },
   "David": { geld: 500, aandelen: {} },
   "Alejandro": { geld: 500, aandelen: {} },
-  "admin": { geld: 1000, aandelen: {} } // admin gebruiker
+  "admin": { geld: 1000000, aandelen: {} } // admin gebruiker
 };
 
 const MAX_TICKS = 60;
