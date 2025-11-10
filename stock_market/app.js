@@ -1,10 +1,9 @@
-// app.js - full file (replace existing app.js with this)
 const stocks = {
-  "Oenvast BV": { waarde: Math.random()*90+10, succes: 50, color: 'red' },
-  "GekkoGames": { waarde: Math.random()*90+10, succes: 50, color: 'blue' },
-  "Minecraft": { waarde: Math.random()*90+10, succes: 50, color: 'green' },
-  "Pon BV": { waarde: Math.random()*90+10, succes: 50, color: 'orange' },
-  "Bombardilo BV": { waarde: Math.random()*90+10, succes: 50, color: 'purple' },
+  "Oenvast BV": { waarde: Math.random() * 90 + 10, succes: 50, color: 'red', lowCount: 0 },
+  "GekkoGames": { waarde: Math.random() * 90 + 10, succes: 50, color: 'blue', lowCount: 0 },
+  "Minecraft": { waarde: Math.random() * 90 + 10, succes: 50, color: 'green', lowCount: 0 },
+  "Pon BV": { waarde: Math.random() * 90 + 10, succes: 50, color: 'orange', lowCount: 0 },
+  "Bombardilo BV": { waarde: Math.random() * 90 + 10, succes: 50, color: 'purple', lowCount: 0 },
 };
 
 const players = {
@@ -17,7 +16,6 @@ const MAX_TICKS = 100;
 const buffers = {};
 for (let s in stocks) buffers[s] = [stocks[s].waarde];
 
-/* ---------------- Chart setup ---------------- */
 const ctx = document.getElementById('chart').getContext('2d');
 const chart = new Chart(ctx, {
   type: 'line',
@@ -26,37 +24,23 @@ const chart = new Chart(ctx, {
     datasets: Object.entries(stocks).map(([name, s]) => ({
       label: name,
       borderColor: s.color,
-      backgroundColor: 'transparent',
       data: buffers[name],
       tension: 0.2,
-      pointRadius: 0,
     })),
   },
-  options: {
-    animation: false,
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      y: { beginAtZero: true }
-    }
-  },
+  options: { animation: false, scales: { y: { beginAtZero: true } } },
 });
 
-/* ---------------- Utilities ---------------- */
 function log(msg) {
   const logBox = document.getElementById('log');
-  if (!logBox) return;
   logBox.textContent += msg + "\n";
   logBox.scrollTop = logBox.scrollHeight;
 }
 
 function updatePortfolio() {
-  const playerSel = document.getElementById('player');
-  if (!playerSel) return;
-  const playerName = playerSel.value;
+  const playerName = document.getElementById('player').value;
   const player = players[playerName];
   const div = document.getElementById('portfolio');
-  if (!player || !div) return;
 
   let totalValue = player.geld;
   let html = `<h3>${playerName}'s Rekening</h3>`;
@@ -64,7 +48,7 @@ function updatePortfolio() {
   html += `<table><tr><th>Aandeel</th><th>Aantal</th><th>Waarde/stuk</th><th>Totaal</th></tr>`;
 
   for (let [aandeel, aantal] of Object.entries(player.aandelen)) {
-    const waarde = (stocks[aandeel] && stocks[aandeel].waarde) ? stocks[aandeel].waarde : 0;
+    const waarde = stocks[aandeel].waarde;
     const totaal = aantal * waarde;
     totalValue += totaal;
     html += `<tr><td>${aandeel}</td><td>${aantal}</td><td>€${waarde.toFixed(2)}</td><td>€${totaal.toFixed(2)}</td></tr>`;
@@ -74,139 +58,110 @@ function updatePortfolio() {
   div.innerHTML = html;
 }
 
-/* ---------------- Simulation tick ---------------- */
+// === NEW: Apply stock penalties and limits ===
 function tick() {
-  try {
-    for (let [name, info] of Object.entries(stocks)) {
-      const change = Math.random() * 10;
-      if (Math.random() * 100 < info.succes) info.waarde += change;
-      else info.waarde -= change;
-      if (info.waarde < 1) info.waarde = 1;
-      buffers[name].push(info.waarde);
-      if (buffers[name].length > MAX_TICKS) buffers[name].shift();
+  for (let [name, info] of Object.entries(stocks)) {
+    // Random movement
+    const change = Math.random() * 10;
+    if (Math.random() * 100 < info.succes) info.waarde += change;
+    else info.waarde -= change;
+    if (info.waarde < 0) info.waarde = 0;
+
+    // Track low-value streak
+    if (info.waarde < 1) info.lowCount++;
+    else info.lowCount = 0;
+
+    // After 3 ticks below 1 euro, players lose 2 shares
+    if (info.lowCount >= 3) {
+      for (let playerName in players) {
+        const player = players[playerName];
+        if (player.aandelen[name] && player.aandelen[name] > 0) {
+          const loss = Math.min(2, player.aandelen[name]);
+          player.aandelen[name] -= loss;
+          if (player.aandelen[name] <= 0) delete player.aandelen[name];
+          log(`⚠️ ${playerName} verloor ${loss}x ${name} (waarde te laag)`);
+        }
+      }
+      info.lowCount = 0; // reset counter after penalty
     }
-    chart.update();
-    updatePortfolio();
-  } catch (err) {
-    console.error("Tick error:", err);
+
+    // Update chart buffers
+    buffers[name].push(info.waarde);
+    if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
+
+  chart.update();
+  updatePortfolio();
 }
 
-/* ---------------- Buy / Sell ---------------- */
 function koop(aandeel, aantal, speler) {
-  if (!aandeel || !speler) return;
-  aantal = Number(aantal) || 0;
-  if (aantal <= 0) { log("Voer een positief aantal in."); return; }
-
   const stock = stocks[aandeel];
   const player = players[speler];
-  if (!stock || !player) return;
   const prijs = stock.waarde * aantal;
+
+  // Limit based on stock worth (10 at €50 base)
+  const maxAllowed = Math.max(1, Math.floor(10 * (50 / stock.waarde)));
+  const currentOwned = player.aandelen[aandeel] || 0;
+  if (currentOwned + aantal > maxAllowed) {
+    log(`❌ ${speler} kan max ${maxAllowed}x ${aandeel} kopen (limiet o.b.v. waarde).`);
+    return;
+  }
+
   if (player.geld >= prijs) {
     player.geld -= prijs;
-    player.aandelen[aandeel] = (player.aandelen[aandeel] || 0) + aantal;
-    log(`${speler} kocht ${aantal}x ${aandeel} voor €${prijs.toFixed(2)}`);
+    player.aandelen[aandeel] = currentOwned + aantal;
+    log(`✅ ${speler} kocht ${aantal}x ${aandeel} voor €${prijs.toFixed(2)}`);
     updatePortfolio();
-  } else log(`${speler} heeft niet genoeg geld!`);
+  } else log(`❌ ${speler} heeft niet genoeg geld!`);
 }
 
 function verkoop(aandeel, aantal, speler) {
-  if (!aandeel || !speler) return;
-  aantal = Number(aantal) || 0;
-  if (aantal <= 0) { log("Voer een positief aantal in."); return; }
-
   const player = players[speler];
-  if (!player) return;
   if ((player.aandelen[aandeel] || 0) >= aantal) {
     player.aandelen[aandeel] -= aantal;
     const opbrengst = stocks[aandeel].waarde * aantal;
     player.geld += opbrengst;
-    log(`${speler} verkocht ${aantal}x ${aandeel} voor €${opbrengst.toFixed(2)}`);
+    log(`💰 ${speler} verkocht ${aantal}x ${aandeel} voor €${opbrengst.toFixed(2)}`);
     updatePortfolio();
-  } else log(`${speler} heeft niet genoeg aandelen!`);
+  } else log(`❌ ${speler} heeft niet genoeg aandelen!`);
 }
 
-/* ---------------- Ticker (robust speed control) ---------------- */
-let currentSpeed = 1000;     // milliseconds
-let tickTimerId = null;
+// ---- SPEED CONTROL ----
+let currentSpeed = 1000; // default = 1x
+let tickInterval = setInterval(tick, currentSpeed);
 
-function startTicker(ms) {
-  // guard - clear existing timer first
-  if (tickTimerId !== null) {
-    clearInterval(tickTimerId);
-    tickTimerId = null;
-  }
-  currentSpeed = Number(ms) || 1000;
-  // immediately run one tick for snappy response, then schedule
-  tick();
-  tickTimerId = setInterval(tick, currentSpeed);
-  // update active classes
+function setSpeed(ms) {
+  clearInterval(tickInterval);
+  currentSpeed = ms;
+  tickInterval = setInterval(tick, currentSpeed);
   document.querySelectorAll("#speed-controls button").forEach(b => b.classList.remove("active"));
-  const btn = document.querySelector(`#speed-controls button[data-speed='${currentSpeed}']`);
-  if (btn) btn.classList.add("active");
-  console.log(`Ticker started at ${currentSpeed} ms`);
+  document.querySelector(`#speed-controls button[data-speed='${ms}']`).classList.add("active");
 }
 
-function stopTicker() {
-  if (tickTimerId !== null) {
-    clearInterval(tickTimerId);
-    tickTimerId = null;
-    console.log("Ticker stopped");
-  }
-}
+document.querySelectorAll("#speed-controls button").forEach(btn => {
+  btn.onclick = () => setSpeed(+btn.dataset.speed);
+});
 
-function togglePause() {
-  if (tickTimerId === null) startTicker(currentSpeed);
-  else stopTicker();
-}
+// ---- INITIAL SETUP ----
+const playerSelect = document.getElementById('player');
+Object.keys(players).forEach(p => {
+  const opt = document.createElement('option');
+  opt.value = p; opt.textContent = p;
+  playerSelect.append(opt);
+});
 
-/* ---------------- Initialization: wire UI ---------------- */
-function initUI() {
-  // populate players
-  const playerSelect = document.getElementById('player');
-  if (!playerSelect) { console.error("player select not found"); return; }
-  playerSelect.innerHTML = '';
-  Object.keys(players).forEach(p => {
-    const opt = document.createElement('option'); opt.value = p; opt.textContent = p;
-    playerSelect.append(opt);
-  });
+const stockSelect = document.getElementById('stock');
+Object.keys(stocks).forEach(s => {
+  const opt = document.createElement('option');
+  opt.value = s; opt.textContent = s;
+  stockSelect.append(opt);
+});
 
-  // populate stocks
-  const stockSelect = document.getElementById('stock');
-  if (!stockSelect) { console.error("stock select not found"); return; }
-  stockSelect.innerHTML = '';
-  Object.keys(stocks).forEach(s => {
-    const opt = document.createElement('option'); opt.value = s; opt.textContent = s;
-    stockSelect.append(opt);
-  });
+document.getElementById('buy').onclick = () =>
+  koop(stockSelect.value, +document.getElementById('amount').value, playerSelect.value);
 
-  // buy / sell buttons
-  const buyBtn = document.getElementById('buy');
-  const sellBtn = document.getElementById('sell');
-  if (buyBtn) buyBtn.onclick = () => koop(stockSelect.value, +document.getElementById('amount').value, playerSelect.value);
-  if (sellBtn) sellBtn.onclick = () => verkoop(stockSelect.value, +document.getElementById('amount').value, playerSelect.value);
+document.getElementById('sell').onclick = () =>
+  verkoop(stockSelect.value, +document.getElementById('amount').value, playerSelect.value);
 
-  // player change -> update portfolio
-  playerSelect.onchange = updatePortfolio;
-
-  // speed buttons
-  document.querySelectorAll("#speed-controls button").forEach(btn => {
-    const ms = Number(btn.dataset.speed);
-    btn.addEventListener('click', () => startTicker(ms));
-  });
-
-  // optional: add pause key (space)
-  document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space') { e.preventDefault(); togglePause(); }
-  });
-
-  updatePortfolio();
-  startTicker(currentSpeed); // start default ticker
-}
-
-/* ---------------- Run init after DOM loaded ---------------- */
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initUI);
-} else {
-  initUI();
-}
+playerSelect.onchange = updatePortfolio;
+updatePortfolio();
