@@ -234,22 +234,19 @@ function verkoop(aandeel, aantal, speler) {
 
 // --- Save Game ---
 function saveGame() {
-  const data = {
-    stocks,
-    buffers,
-    players,
-    crashTicksLeft,
-    preCrashTicks,
-  };
+  const data = { stocks, buffers, players, crashTicksLeft, preCrashTicks };
   const json = JSON.stringify(data);
-  // Trigger download
   const blob = new Blob([json], { type: "application/json" });
   const url = URL.createObjectURL(blob);
+
   const a = document.createElement("a");
   a.href = url;
   a.download = "stock_market_save.json";
+  document.body.appendChild(a); // append to DOM for browser compliance
   a.click();
+  document.body.removeChild(a); // clean up
   URL.revokeObjectURL(url);
+
   log("💾 Game saved!");
 }
 
