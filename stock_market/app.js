@@ -42,17 +42,18 @@ const chart = new Chart(ctx, {
 
 // --- Logging ---
 function log(msg) {
-  const logBox = document.getElementById('log');
+  const logBox = document.getElementById('console');
   logBox.textContent += msg + "\n";
   logBox.scrollTop = logBox.scrollHeight;
 }
 
-// --- Portfolio & Market ---
+// --- Update Portfolio & Market ---
 function updatePortfolio() {
   const playerName = document.getElementById('player').value;
   const player = players[playerName];
-  const div = document.getElementById('portfolio');
 
+  // Portfolio tab
+  const div = document.getElementById('portfolio');
   let totalValue = player.geld;
   let html = `<h3>${playerName}'s Rekening</h3>`;
   html += `<p><strong>Geld:</strong> €${player.geld.toFixed(2)}</p>`;
@@ -70,22 +71,19 @@ function updatePortfolio() {
 
   // Market tab
   const marketDiv = document.getElementById('market');
-  if (marketDiv) {
-    let marketHtml = `<h3>Stock Market Info</h3>`;
-    marketHtml += `<table><tr><th>Aandeel</th><th>Huidige Waarde</th><th>Max Aantal</th></tr>`;
-    for (let [name, stock] of Object.entries(stocks)) {
-      let maxAllowed = 0;
-      if (stock.waarde <= 0) maxAllowed = 0;
-      else if (stock.waarde <= 10) maxAllowed = 2;
-      else if (stock.waarde <= 50) maxAllowed = 10;
-      else if (stock.waarde <= 100) maxAllowed = 20;
-      else maxAllowed = 40;
-
-      marketHtml += `<tr><td>${name}</td><td>€${stock.waarde.toFixed(2)}</td><td>${maxAllowed}</td></tr>`;
-    }
-    marketHtml += `</table>`;
-    marketDiv.innerHTML = marketHtml;
+  let marketHtml = `<h3>Stock Market Info</h3>`;
+  marketHtml += `<table><tr><th>Aandeel</th><th>Waarde</th><th>Max Aantal</th></tr>`;
+  for (let [name, stock] of Object.entries(stocks)) {
+    let maxAllowed = 0;
+    if (stock.waarde <= 0) maxAllowed = 0;
+    else if (stock.waarde <= 10) maxAllowed = 2;
+    else if (stock.waarde <= 50) maxAllowed = 10;
+    else if (stock.waarde <= 100) maxAllowed = 20;
+    else maxAllowed = 40;
+    marketHtml += `<tr><td>${name}</td><td>€${stock.waarde.toFixed(2)}</td><td>${maxAllowed}</td></tr>`;
   }
+  marketHtml += `</table>`;
+  marketDiv.innerHTML = marketHtml;
 }
 
 // --- Tick Function ---
@@ -96,11 +94,9 @@ function tick() {
     else info.waarde -= change;
     if (info.waarde < 0) info.waarde = 0;
 
-    // Low-value tracking
     if (info.waarde < 1) info.lowCount++;
     else info.lowCount = 0;
 
-    // Lose shares if too low
     if (info.lowCount >= 3) {
       for (let pname in players) {
         const player = players[pname];
@@ -114,12 +110,10 @@ function tick() {
       info.lowCount = 0;
     }
 
-    // Update chart buffer
     buffers[name].push(info.waarde);
     if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
 
-  // Dynamic Y-axis scaling
   chart.options.scales.y.max = Math.max(...Object.values(stocks).map(s => s.waarde)) * 1.1;
   chart.update();
   updatePortfolio();
@@ -130,7 +124,6 @@ function koop(aandeel, aantal, speler) {
   const stock = stocks[aandeel];
   const player = players[speler];
 
-  // Global stock limits
   let maxAllowed = 0;
   if (stock.waarde <= 0) maxAllowed = 0;
   else if (stock.waarde <= 10) maxAllowed = 2;
@@ -165,7 +158,7 @@ function verkoop(aandeel, aantal, speler) {
   } else log(`❌ ${speler} heeft niet genoeg aandelen!`);
 }
 
-// --- Setup Selects ---
+// --- Setup selects ---
 const playerSelect = document.getElementById('player');
 Object.keys(players).forEach(p => {
   const opt = document.createElement('option');
