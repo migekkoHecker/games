@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Aandelen Simulator 🏦</title>
+  <title>Stock Market Simulator 🏦</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script defer src="app.js"></script>
   <link rel="stylesheet" href="style.css">
@@ -13,7 +13,7 @@
 
     <canvas id="chart"></canvas>
 
-    <!-- Purchase Controls -->
+    <!-- Buy/Sell Controls -->
     <div id="controls">
       <select id="player"></select>
       <select id="stock"></select>
@@ -22,20 +22,25 @@
       <button id="sell">Verkoop</button>
     </div>
 
-    <!-- Tabs -->
-    <div id="tabs">
-      <div class="tab active" data-tab="log">Console</div>
+    <!-- Tab Menu -->
+    <div class="tabs">
+      <div class="tab active" data-tab="console">Console</div>
       <div class="tab" data-tab="portfolio">Portfolio</div>
       <div class="tab" data-tab="market">Market</div>
     </div>
 
-    <!-- Tab Content -->
-    <div id="tab-content">
-      <pre id="log" class="tab-panel active"></pre>
-      <div id="portfolio" class="tab-panel"></div>
-      <div id="market" class="tab-panel"></div>
+    <!-- Tab Panels -->
+    <div id="console" class="tab-panel active">
+      <pre id="log"></pre>
     </div>
 
+    <div id="portfolio" class="tab-panel">
+      <div class="portfolio"></div>
+    </div>
+
+    <div id="market" class="tab-panel">
+      <!-- Market table is generated dynamically by app.js -->
+    </div>
   </div>
 </body>
 </html>
