@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Aandelen Simulator 🏦</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="app.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🏦 Aandelen Simulator</h1>
+    <canvas id="chart"></canvas>
+
+    <div id="controls">
+      <select id="player"></select>
+      <select id="stock"></select>
+      <input type="number" id="amount" placeholder="Aantal" />
+      <button id="buy">Koop</button>
+      <button id="sell">Verkoop</button>
+    </div>
+
+    <pre id="log"></pre>
+  </div>
+</body>
+</html>
