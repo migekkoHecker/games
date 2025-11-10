@@ -111,29 +111,14 @@ function updatePortfolio() {
 // --- Tick Function ---
 let crashTicksLeft = 0;
 let preCrashTicks = 0;
-
 function tick() {
-  if (preCrashTicks > 0) {
-    preCrashTicks--;
-    for (let stock of Object.values(stocks)) stock.succes = 70;
-    if (preCrashTicks === 0) {
-      log("💥 Stock market crash begins! All stocks are now much riskier!");
-      for (let stock of Object.values(stocks)) stock.succes = 25;
-      crashTicksLeft = 90;
-    }
-  } else if (crashTicksLeft === 0 && Math.random() < 1 / 700) {
-    log("⚡ Pre-crash boom! Stocks are very likely to rise for a short period...");
-    preCrashTicks = 30;
+  // Tick-gewijze aanpassing van succes
+  for (let stock of Object.values(stocks)) {
+    stock.succes += (Math.random() * 6) - 3; // -3 tot +3
+    stock.succes = Math.max(0, Math.min(100, stock.succes)); // clamp
   }
 
-  if (crashTicksLeft > 0) {
-    crashTicksLeft--;
-    if (crashTicksLeft === 0) {
-      log("📈 Market recovers! Stock succes chances restored.");
-      for (let stock of Object.values(stocks)) stock.succes = 50;
-    }
-  }
-
+  // --- Normale stock updates ---
   for (let [name, info] of Object.entries(stocks)) {
     const change = Math.random() * 3;
     if (Math.random() * 100 < info.succes) info.waarde += change;
@@ -160,30 +145,27 @@ function tick() {
     if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
 
-  const maxValue = Math.max(...Object.values(stocks).map(s => s.waarde)) * 1.1;
-  chart.options.scales.y.max = Math.max(maxValue, 100);
+  chart.options.scales.y.max = Math.max(...Object.values(stocks).map(s => s.waarde) * 1.1, 100);
   chart.update();
   updatePortfolio();
 }
 
-// --- Buy / Sell ---
+
 function koop(aandeel, aantal, speler) {
   const stock = stocks[aandeel];
   const player = players[speler];
+  const prijs = stock.waarde * aantal;
 
-  let maxAllowed = Math.round((stock.waarde / 50) * 10);
-  if (maxAllowed < 1 && stock.waarde > 0) maxAllowed = 1;
-
-  const currentOwned = player.aandelen[aandeel] || 0;
-  if (currentOwned + aantal > maxAllowed) {
-    log(`❌ ${speler} kan max ${maxAllowed}x ${aandeel} kopen.`);
+  if ((player.aandelen[aandeel] || 0) + aantal > Math.round((stock.waarde / 50) * 10)) {
+    log(`❌ ${speler} kan niet meer kopen.`);
     return;
   }
 
-  const prijs = stock.waarde * aantal;
   if (player.geld >= prijs) {
     player.geld -= prijs;
-    player.aandelen[aandeel] = currentOwned + aantal;
+    player.aandelen[aandeel] = (player.aandelen[aandeel] || 0) + aantal;
+    stock.succes += 2; // koop verhoogt succes
+    stock.succes = Math.min(stock.succes, 100);
     log(`✅ ${speler} kocht ${aantal}x ${aandeel} voor €${Math.round(prijs)}`);
     updatePortfolio();
   } else log(`❌ ${speler} heeft niet genoeg geld!`);
@@ -196,10 +178,13 @@ function verkoop(aandeel, aantal, speler) {
     if (player.aandelen[aandeel] <= 0) delete player.aandelen[aandeel];
     const opbrengst = stocks[aandeel].waarde * aantal * 0.9;
     player.geld += opbrengst;
-    log(`💰 ${speler} verkocht ${aantal}x ${aandeel} voor €${Math.round(opbrengst)} (90% waarde)`);
+    stocks[aandeel].succes -= 2; // verkoop verlaagt succes
+    stocks[aandeel].succes = Math.max(stocks[aandeel].succes, 0);
+    log(`💰 ${speler} verkocht ${aantal}x ${aandeel} voor €${Math.round(opbrengst)} (90%)`);
     updatePortfolio();
   } else log(`❌ ${speler} heeft niet genoeg aandelen!`);
 }
+
 
 // --- Save / Load Clipboard ---
 function saveGameToClipboard() {
