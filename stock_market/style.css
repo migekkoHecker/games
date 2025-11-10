@@ -47,52 +47,49 @@ button:hover {
 }
 
 /* Chart */
-#chart-container {
+#chart {
   width: 100%;
-  height: 300px;         /* fixed graph height */
+  height: 300px;
   max-height: 300px;
   margin-top: 1rem;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  overflow: hidden;      /* ensures graph doesn’t grow outside box */
 }
-
-#chart {
-  width: 100%;
-  height: 100%;          /* fill container */
-}
-
-
 
 /* Tabs */
-.tabs {
+#tabs {
   display: flex;
   margin-top: 1rem;
-  gap: 0.5rem;
+  border-bottom: 2px solid #e2e8f0;
 }
 
-.tab-btn {
-  background: #f3f4f6;
-  color: #111827;
-  border: 1px solid #d1d5db;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
+.tab {
+  padding: 0.5rem 1rem;
   cursor: pointer;
-  transition: all 0.2s;
+  border: 1px solid #e2e8f0;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: #f8fafc;
+  margin-right: 0.25rem;
+  font-weight: 500;
 }
 
-.tab-btn.active {
-  background: #2563eb;
-  color: white;
-  border-color: #1d4ed8;
+.tab.active {
+  background: white;
+  font-weight: 700;
 }
 
-/* Tab Content */
-.tab-content {
-  margin-top: 1rem;
+/* Tab Panels */
+.tab-panel {
+  display: none;
+  margin-top: 0.5rem;
 }
 
-/* Log */
+.tab-panel.active {
+  display: block;
+}
+
+/* Log box */
 pre {
   background: #f1f5f9;
   padding: 10px;
@@ -102,23 +99,18 @@ pre {
   font-size: 0.9rem;
 }
 
-/* Portfolio / Market tables */
-.portfolio, #market {
-  margin-top: 1rem;
-}
-
-table {
+/* Portfolio / Market */
+.portfolio, #market table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 0.5rem;
 }
 
-th, td {
+.portfolio th, .portfolio td, #market th, #market td {
   border-bottom: 1px solid #e2e8f0;
   padding: 4px 8px;
   text-align: left;
 }
 
-th {
+.portfolio th, #market th {
   background: #f1f5f9;
 }
