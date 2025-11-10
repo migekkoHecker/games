@@ -21,27 +21,19 @@ for (let s in stocks) buffers[s] = [stocks[s].waarde];
 const ctx = document.getElementById('chart').getContext('2d');
 const chart = new Chart(ctx, {
   type: 'line',
-  data: {
-    labels: Array(MAX_TICKS).fill(""),
-    datasets: Object.entries(stocks).map(([name, s]) => ({
-      label: name,
-      borderColor: s.color,
-      data: buffers[name],
-      tension: 0.2
-    }))
-  },
+  data: { ... },         // your datasets
   options: {
-    responsive: false,             // DISABLE responsive
-    maintainAspectRatio: false,    // keep fixed canvas height
+    responsive: false,
+    maintainAspectRatio: false,
     animation: false,
     scales: {
       y: {
-        beginAtZero: true,
-        ticks: { callback: v => v.toFixed(0) }
+        beginAtZero: true
       }
     }
   }
 });
+
 
 
 // --- Logging ---
