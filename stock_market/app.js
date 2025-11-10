@@ -68,9 +68,62 @@ function startMarketCycle() {
   log("📈 Market Cycle gestart: succes 80% voor 30 ticks!");
 }
 
+// --- Portfolio & Market Update ---
+function updatePortfolio() {
+  const playerName = document.getElementById('player').value;
+  const player = players[playerName];
+
+  // Portfolio tab
+  const div = document.getElementById('portfolio');
+  let totalValue = player.geld;
+  let html = `<h3>${playerName}'s Rekening</h3>`;
+  html += `<p><strong>Geld:</strong> €${Math.round(player.geld)}</p>`;
+  html += `<table><tr><th>Aandeel</th><th>Aantal</th><th>Waarde/stuk</th><th>Verkoopwaarde</th></tr>`;
+  for (let [aandeel, aantal] of Object.entries(player.aandelen)) {
+    const waarde = stocks[aandeel].waarde;
+    const verkoopWaarde = waarde * 0.9;
+    const totaal = aantal * verkoopWaarde;
+    totalValue += totaal;
+    html += `<tr>
+      <td>${aandeel}</td>
+      <td>${aantal}</td>
+      <td>€${Math.round(waarde)}</td>
+      <td>€${Math.round(totaal)}</td>
+    </tr>`;
+  }
+  html += `</table><p><strong>Totaalwaarde (inclusief verkoopwaarde):</strong> €${Math.round(totalValue)}</p>`;
+  div.innerHTML = html;
+
+  // Market tab
+  const marketDiv = document.getElementById('market');
+  let marketHtml = `<h3>Stock Market Info</h3>`;
+  marketHtml += `<table><tr>
+    <th>Aandeel</th><th>Waarde</th>${playerName === "admin" ? "<th>Succes%</th>" : ""}
+    <th>Owned/Max</th><th>Totaal Marktwaarde</th>
+  </tr>`;
+
+  for (let [name, stock] of Object.entries(stocks)) {
+    const price = stock.waarde;
+    let maxAllowed = Math.round((price / 50) * 10);
+    if (maxAllowed < 1 && price > 0) maxAllowed = 1;
+
+    let totalOwned = Object.values(players).reduce((sum, p) => sum + (p.aandelen[name] || 0), 0);
+    let totalMarketValue = totalOwned * price;
+
+    marketHtml += `<tr>
+      <td>${name}</td>
+      <td>€${Math.round(price)}</td>
+      ${playerName === "admin" ? `<td>${stock.succes.toFixed(2)}%</td>` : ""}
+      <td>${totalOwned}/${maxAllowed}</td>
+      <td>€${Math.round(totalMarketValue)}</td>
+    </tr>`;
+  }
+  marketHtml += `</table>`;
+  marketDiv.innerHTML = marketHtml;
+}
+
 // --- Tick Function ---
 function tick() {
-  // --- Random Market Events ---
   const rand = Math.random();
 
   // Crash (-10%) & Boom (+10%)
