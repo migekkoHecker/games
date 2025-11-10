@@ -118,14 +118,18 @@ function koop(aandeel, aantal, speler) {
   const player = players[speler];
   const prijs = stock.waarde * aantal;
 
-  // Global limit: 10 at €50
-  const maxAllowed = Math.max(1, Math.floor(10 * (50 / stock.waarde)));
+  // Limit calculation with minimum price
+  const effectivePrice = Math.max(stock.waarde, 10);
+  let maxAllowed;
+  if (effectivePrice <= 10) maxAllowed = 2;
+  else if (effectivePrice <= 50) maxAllowed = 10;
+  else if (effectivePrice <= 100) maxAllowed = 20;
+  else if (effectivePrice <= 200) maxAllowed = 40;
+  else maxAllowed = 50;
 
-  // Count total owned by all players
+  // Total owned globally
   let totalOwned = 0;
-  for (let p in players) {
-    totalOwned += players[p].aandelen[aandeel] || 0;
-  }
+  for (let p in players) totalOwned += players[p].aandelen[aandeel] || 0;
 
   if (totalOwned + aantal > maxAllowed) {
     log(`❌ ${speler} kan max ${maxAllowed}x ${aandeel} kopen (globaal).`);
@@ -139,6 +143,7 @@ function koop(aandeel, aantal, speler) {
     updatePortfolio();
   } else log(`❌ ${speler} heeft niet genoeg geld!`);
 }
+
 
 
 function verkoop(aandeel, aantal, speler) {
