@@ -68,17 +68,23 @@ function updatePortfolio() {
   let totalValue = player.geld;
   let html = `<h3>${playerName}'s Rekening</h3>`;
   html += `<p><strong>Geld:</strong> €${Math.round(player.geld)}</p>`;
-  html += `<table><tr><th>Aandeel</th><th>Aantal</th><th>Waarde/stuk</th><th>Totaal</th></tr>`;
+  html += `<table><tr><th>Aandeel</th><th>Aantal</th><th>Waarde/stuk</th><th>Verkoopwaarde</th></tr>`;
   for (let [aandeel, aantal] of Object.entries(player.aandelen)) {
     const waarde = stocks[aandeel].waarde;
-    const totaal = aantal * waarde;
+    const verkoopWaarde = waarde * 0.9; // 90% van de huidige waarde
+    const totaal = aantal * verkoopWaarde;
     totalValue += totaal;
-    html += `<tr><td>${aandeel}</td><td>${aantal}</td><td>€${Math.round(waarde)}</td><td>€${Math.round(totaal)}</td></tr>`;
+    html += `<tr>
+      <td>${aandeel}</td>
+      <td>${aantal}</td>
+      <td>€${Math.round(waarde)}</td>
+      <td>€${Math.round(totaal)}</td>
+    </tr>`;
   }
-  html += `</table><p><strong>Totaalwaarde:</strong> €${Math.round(totalValue)}</p>`;
+  html += `</table><p><strong>Totaalwaarde (inclusief verkoopwaarde):</strong> €${Math.round(totalValue)}</p>`;
   div.innerHTML = html;
 
-  // Market tab
+  // Market tab blijft hetzelfde
   const marketDiv = document.getElementById('market');
   let marketHtml = `<h3>Stock Market Info</h3>`;
   marketHtml += `<table><tr><th>Aandeel</th><th>Waarde</th><th>Owned/Max</th><th>Totaal Marktwaarde</th></tr>`;
@@ -100,6 +106,7 @@ function updatePortfolio() {
   marketHtml += `</table>`;
   marketDiv.innerHTML = marketHtml;
 }
+
 
 // --- Tick Function ---
 let crashTicksLeft = 0;
