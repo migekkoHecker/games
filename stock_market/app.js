@@ -67,7 +67,7 @@ function updatePortfolio() {
   html += `<table><tr><th>Aandeel</th><th>Aantal</th><th>Waarde/stuk</th><th>Verkoopwaarde</th></tr>`;
   for (let [aandeel, aantal] of Object.entries(player.aandelen)) {
     const waarde = stocks[aandeel].waarde;
-    const verkoopWaarde = waarde * 0.9; // 90% van de huidige waarde
+    const verkoopWaarde = waarde * 0.9;
     const totaal = aantal * verkoopWaarde;
     totalValue += totaal;
     html += `<tr>
@@ -111,14 +111,15 @@ function updatePortfolio() {
 // --- Tick Function ---
 let crashTicksLeft = 0;
 let preCrashTicks = 0;
+
 function tick() {
   // Tick-gewijze aanpassing van succes
   for (let stock of Object.values(stocks)) {
     stock.succes += (Math.random() * 6) - 3; // -3 tot +3
-    stock.succes = Math.max(0, Math.min(100, stock.succes)); // clamp
+    stock.succes = Math.max(0, Math.min(100, stock.succes));
   }
 
-  // --- Normale stock updates ---
+  // Normale stock updates
   for (let [name, info] of Object.entries(stocks)) {
     const change = Math.random() * 3;
     if (Math.random() * 100 < info.succes) info.waarde += change;
