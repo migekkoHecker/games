@@ -35,46 +35,25 @@ const chart = new Chart(ctx, {
     maintainAspectRatio: false,
     animation: false,
     layout: {
-      padding: {
-        left: 50,
-        right: 20,
-        top: 20,
-        bottom: 50
-      }
+      padding: { left: 50, right: 20, top: 20, bottom: 50 }
     },
     scales: {
       y: {
         beginAtZero: true,
-        ticks: {
-          stepSize: 10,
-          callback: v => `$${Math.round(v)}` // round values
-        }
+        ticks: { stepSize: 10, callback: v => `$${Math.round(v)}` }
       },
-      x: {
-        ticks: { display: false } // optional: hide x labels if crowded
-      }
+      x: { ticks: { display: false } }
     },
     plugins: {
-      legend: {
-        display: true,
-        position: 'bottom', // move legend below chart
-        labels: {
-          boxWidth: 15,
-          padding: 10
-        }
-      },
-      title: {
-        display: true,
-        text: 'Stock Prices'
-      }
+      legend: { display: true, position: 'bottom', labels: { boxWidth: 15, padding: 10 } },
+      title: { display: true, text: 'Stock Prices' }
     }
   }
 });
 
-
 // --- Logging ---
 function log(msg) {
-  const logBox = document.getElementById('log'); // fixed
+  const logBox = document.getElementById('log');
   logBox.textContent += msg + "\n";
   logBox.scrollTop = logBox.scrollHeight;
 }
@@ -104,15 +83,11 @@ function updatePortfolio() {
   let marketHtml = `<h3>Stock Market Info</h3>`;
   marketHtml += `<table><tr><th>Aandeel</th><th>Waarde</th><th>Owned/Max</th><th>Totaal Marktwaarde</th></tr>`;
   for (let [name, stock] of Object.entries(stocks)) {
-    // proportional max allowed
     const price = stock.waarde;
     let maxAllowed = Math.round((price / 50) * 10);
     if (maxAllowed < 1 && price > 0) maxAllowed = 1;
 
-    // total owned
     let totalOwned = Object.values(players).reduce((sum, p) => sum + (p.aandelen[name] || 0), 0);
-
-    // total market value
     let totalMarketValue = totalOwned * price;
 
     marketHtml += `<tr>
@@ -127,44 +102,33 @@ function updatePortfolio() {
 }
 
 // --- Tick Function ---
-let crashTicksLeft = 0;    // crash duration
-let preCrashTicks = 0;     // pre-crash period
+let crashTicksLeft = 0;
+let preCrashTicks = 0;
 
 function tick() {
-  // --- Pre-crash period ---
   if (preCrashTicks > 0) {
     preCrashTicks--;
-    for (let stock of Object.values(stocks)) {
-      stock.succes = 70; // temporarily more likely to go up
-    }
+    for (let stock of Object.values(stocks)) stock.succes = 70;
     if (preCrashTicks === 0) {
-      // After pre-crash period, trigger the crash
       log("💥 Stock market crash begins! All stocks are now much riskier!");
-      for (let stock of Object.values(stocks)) {
-        stock.succes = 25; // reduce success chance
-      }
-      crashTicksLeft = 90; // crash lasts 20 ticks
+      for (let stock of Object.values(stocks)) stock.succes = 25;
+      crashTicksLeft = 90;
     }
   } else if (crashTicksLeft === 0 && Math.random() < 1 / 700) {
-    // 1/700 chance to start pre-crash period
     log("⚡ Pre-crash boom! Stocks are very likely to rise for a short period...");
-    preCrashTicks = 30; // 10 ticks of succes 70%
+    preCrashTicks = 30;
   }
 
-  // --- If crash ongoing, decrement counter ---
   if (crashTicksLeft > 0) {
     crashTicksLeft--;
     if (crashTicksLeft === 0) {
       log("📈 Market recovers! Stock succes chances restored.");
-      for (let stock of Object.values(stocks)) {
-        stock.succes = 50; // restore normal succes
-      }
+      for (let stock of Object.values(stocks)) stock.succes = 50;
     }
   }
 
-  // --- Normal stock updates ---
   for (let [name, info] of Object.entries(stocks)) {
-    const change = Math.random() * 3; // smaller steps for smoother movement
+    const change = Math.random() * 3;
     if (Math.random() * 100 < info.succes) info.waarde += change;
     else info.waarde -= change;
     if (info.waarde < 0) info.waarde = 0;
@@ -189,13 +153,11 @@ function tick() {
     if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
 
-  // Dynamic y-axis scaling, minimum 100
   const maxValue = Math.max(...Object.values(stocks).map(s => s.waarde)) * 1.1;
   chart.options.scales.y.max = Math.max(maxValue, 100);
   chart.update();
   updatePortfolio();
 }
-
 
 // --- Buy / Sell ---
 function koop(aandeel, aantal, speler) {
@@ -225,67 +187,44 @@ function verkoop(aandeel, aantal, speler) {
   if ((player.aandelen[aandeel] || 0) >= aantal) {
     player.aandelen[aandeel] -= aantal;
     if (player.aandelen[aandeel] <= 0) delete player.aandelen[aandeel];
-    const opbrengst = stocks[aandeel].waarde * aantal * 0.9; // only 90%
+    const opbrengst = stocks[aandeel].waarde * aantal * 0.9;
     player.geld += opbrengst;
     log(`💰 ${speler} verkocht ${aantal}x ${aandeel} voor €${Math.round(opbrengst)} (90% waarde)`);
     updatePortfolio();
   } else log(`❌ ${speler} heeft niet genoeg aandelen!`);
 }
 
-// --- Save Game ---
-function saveGame() {
+// --- Save / Load Clipboard ---
+function saveGameToClipboard() {
   const data = { stocks, buffers, players, crashTicksLeft, preCrashTicks };
-  const json = JSON.stringify(data);
-  const blob = new Blob([json], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "stock_market_save.json";
-  document.body.appendChild(a); // append to DOM for browser compliance
-  a.click();
-  document.body.removeChild(a); // clean up
-  URL.revokeObjectURL(url);
-
-  log("💾 Game saved!");
+  const json = JSON.stringify(data, null, 2);
+  navigator.clipboard.writeText(json)
+    .then(() => log("💾 Game saved to clipboard! Paste it somewhere safe."))
+    .catch(err => log("❌ Failed to copy save: " + err));
 }
 
-// --- Load Game ---
-function loadGame(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = JSON.parse(e.target.result);
-      // Restore all data
-      Object.assign(stocks, data.stocks);
-      Object.assign(buffers, data.buffers);
-      Object.assign(players, data.players);
-      crashTicksLeft = data.crashTicksLeft || 0;
-      preCrashTicks = data.preCrashTicks || 0;
-      chart.data.datasets.forEach(ds => {
-        ds.data = buffers[ds.label];
-      });
-      chart.update();
-      updatePortfolio();
-      log("📂 Game loaded!");
-    } catch (err) {
-      log("❌ Failed to load game: " + err);
-    }
-  };
-  reader.readAsText(file);
+function loadGameFromClipboard() {
+  const json = prompt("Paste your saved game JSON here:");
+  if (!json) return;
+  try {
+    const data = JSON.parse(json);
+    Object.assign(stocks, data.stocks);
+    Object.assign(buffers, data.buffers);
+    Object.assign(players, data.players);
+    crashTicksLeft = data.crashTicksLeft || 0;
+    preCrashTicks = data.preCrashTicks || 0;
+    chart.data.datasets.forEach(ds => ds.data = buffers[ds.label]);
+    chart.update();
+    updatePortfolio();
+    log("📂 Game loaded from clipboard!");
+  } catch (err) {
+    log("❌ Failed to load save: " + err);
+  }
 }
 
-// Save / Load Buttons
-document.getElementById('save').onclick = saveGame;
-
-document.getElementById('loadBtn').onclick = () => {
-  document.getElementById('load').click();
-};
-
-document.getElementById('load').onchange = loadGame;
-
+// Hook buttons
+document.getElementById('save').onclick = saveGameToClipboard;
+document.getElementById('loadBtn').onclick = loadGameFromClipboard;
 
 // --- Setup selects ---
 const playerSelect = document.getElementById('player');
