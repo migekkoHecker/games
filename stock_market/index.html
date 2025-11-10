@@ -10,9 +10,7 @@
 <body>
   <div class="container">
     <h1>🏦 Aandelen Simulator</h1>
-    <div class="chart-container">
-      <canvas id="chart"></canvas>
-    </div>
+    <canvas id="chart"></canvas>
 
     <div id="controls">
       <select id="player"></select>
@@ -22,8 +20,25 @@
       <button id="sell">Verkoop</button>
     </div>
 
-    <div id="portfolio" class="portfolio"></div>
-    <pre id="log"></pre>
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="log-tab">Log / Console</button>
+      <button class="tab-btn" data-tab="portfolio-tab">Portfolio</button>
+      <button class="tab-btn" data-tab="market-tab">Stock Market</button>
+    </div>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="log-tab">
+      <pre id="log"></pre>
+    </div>
+
+    <div class="tab-content" id="portfolio-tab" style="display:none;">
+      <div id="portfolio"></div>
+    </div>
+
+    <div class="tab-content" id="market-tab" style="display:none;">
+      <div id="market"></div>
+    </div>
   </div>
 </body>
 </html>
