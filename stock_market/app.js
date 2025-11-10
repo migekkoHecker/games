@@ -37,7 +37,12 @@ const chart = new Chart(ctx, {
     scales: {
       y: {
         beginAtZero: true,
-        ticks: { font: { size: 14 } }  // readable
+        ticks: {
+          font: { size: 14 },
+          callback: value => Math.round(value)  // round for display
+        },
+        suggestedMin: 0,
+        suggestedMax: 100  // minimum graph height
       },
       x: { ticks: { font: { size: 12 } } }
     },
@@ -55,7 +60,7 @@ function log(msg) {
   logBox.scrollTop = logBox.scrollHeight;
 }
 
-// --- Update Portfolio & Market ---
+// --- Portfolio & Market Update ---
 function updatePortfolio() {
   const playerName = document.getElementById('player').value;
   const player = players[playerName];
@@ -70,9 +75,9 @@ function updatePortfolio() {
     const waarde = stocks[aandeel].waarde;
     const totaal = aantal * waarde;
     totalValue += totaal;
-    html += `<tr><td>${aandeel}</td><td>${aantal}</td><td>€${waarde.toFixed(2)}</td><td>€${totaal.toFixed(2)}</td></tr>`;
+    html += `<tr><td>${aandeel}</td><td>${aantal}</td><td>€${Math.round(waarde)}</td><td>€${Math.round(totaal)}</td></tr>`;
   }
-  html += `</table><p><strong>Totaalwaarde:</strong> €${totalValue.toFixed(2)}</p>`;
+  html += `</table><p><strong>Totaalwaarde:</strong> €${Math.round(totalValue)}</p>`;
   div.innerHTML = html;
 
   // Market tab
@@ -80,13 +85,11 @@ function updatePortfolio() {
   let marketHtml = `<h3>Stock Market Info</h3>`;
   marketHtml += `<table><tr><th>Aandeel</th><th>Waarde</th><th>Max Aantal</th></tr>`;
   for (let [name, stock] of Object.entries(stocks)) {
-    let maxAllowed = 0;
-    if (stock.waarde <= 0) maxAllowed = 0;
-    else if (stock.waarde <= 10) maxAllowed = 2;
-    else if (stock.waarde <= 50) maxAllowed = 10;
-    else if (stock.waarde <= 100) maxAllowed = 20;
-    else maxAllowed = 40;
-    marketHtml += `<tr><td>${name}</td><td>€${stock.waarde.toFixed(2)}</td><td>${maxAllowed}</td></tr>`;
+    // Proportional stock limits based on reference points
+    const price = stock.waarde;
+    let maxAllowed = Math.round( (price / 50) * 10 ); // ref: 50$ = 10
+    if (maxAllowed < 1 && price > 0) maxAllowed = 1; // at least 1 if price > 0
+    marketHtml += `<tr><td>${name}</td><td>€${Math.round(price)}</td><td>${maxAllowed}</td></tr>`;
   }
   marketHtml += `</table>`;
   marketDiv.innerHTML = marketHtml;
@@ -100,7 +103,7 @@ function tick() {
     else info.waarde -= change;
     if (info.waarde < 0) info.waarde = 0;
 
-    // Low value tracking
+    // Low-value tracking
     if (info.waarde < 1) info.lowCount++;
     else info.lowCount = 0;
 
@@ -121,7 +124,9 @@ function tick() {
     if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
 
-  chart.options.scales.y.max = Math.max(...Object.values(stocks).map(s => s.waarde)) * 1.1;
+  // Dynamic y-axis scaling, minimum 100
+  const maxValue = Math.max(...Object.values(stocks).map(s => s.waarde)) * 1.1;
+  chart.options.scales.y.max = Math.max(maxValue, 100);
   chart.update();
   updatePortfolio();
 }
@@ -131,12 +136,8 @@ function koop(aandeel, aantal, speler) {
   const stock = stocks[aandeel];
   const player = players[speler];
 
-  let maxAllowed = 0;
-  if (stock.waarde <= 0) maxAllowed = 0;
-  else if (stock.waarde <= 10) maxAllowed = 2;
-  else if (stock.waarde <= 50) maxAllowed = 10;
-  else if (stock.waarde <= 100) maxAllowed = 20;
-  else maxAllowed = 40;
+  let maxAllowed = Math.round( (stock.waarde / 50) * 10 ); // proportional limit
+  if (maxAllowed < 1 && stock.waarde > 0) maxAllowed = 1;
 
   const currentOwned = player.aandelen[aandeel] || 0;
   if (currentOwned + aantal > maxAllowed) {
@@ -148,7 +149,7 @@ function koop(aandeel, aantal, speler) {
   if (player.geld >= prijs) {
     player.geld -= prijs;
     player.aandelen[aandeel] = currentOwned + aantal;
-    log(`✅ ${speler} kocht ${aantal}x ${aandeel} voor €${prijs.toFixed(2)}`);
+    log(`✅ ${speler} kocht ${aantal}x ${aandeel} voor €${Math.round(prijs)}`);
     updatePortfolio();
   } else log(`❌ ${speler} heeft niet genoeg geld!`);
 }
@@ -160,7 +161,7 @@ function verkoop(aandeel, aantal, speler) {
     if (player.aandelen[aandeel] <= 0) delete player.aandelen[aandeel];
     const opbrengst = stocks[aandeel].waarde * aantal;
     player.geld += opbrengst;
-    log(`💰 ${speler} verkocht ${aantal}x ${aandeel} voor €${opbrengst.toFixed(2)}`);
+    log(`💰 ${speler} verkocht ${aantal}x ${aandeel} voor €${Math.round(opbrengst)}`);
     updatePortfolio();
   } else log(`❌ ${speler} heeft niet genoeg aandelen!`);
 }
