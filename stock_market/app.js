@@ -32,9 +32,14 @@ const chart = new Chart(ctx, {
   },
   options: {
     responsive: true,
-    maintainAspectRatio: false,
+    maintainAspectRatio: false, // allows fixed canvas height
     animation: false,
-    scales: { y: { beginAtZero:true } }
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { callback: v => v.toFixed(0) } // optional rounding
+      }
+    }
   }
 });
 
@@ -71,8 +76,8 @@ function updatePortfolio() {
 function tick() {
   for (let [name, info] of Object.entries(stocks)) {
     // Random value change
-    const change = Math.random()*10;
-    if (Math.random()*100 < info.succes) info.waarde += change;
+    const change = Math.random() * 10;
+    if (Math.random() * 100 < info.succes) info.waarde += change;
     else info.waarde -= change;
     if (info.waarde < 0) info.waarde = 0;
 
@@ -98,6 +103,10 @@ function tick() {
     buffers[name].push(info.waarde);
     if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
+
+  // Dynamic y-axis scaling
+  const maxValue = Math.max(...Object.values(stocks).map(s => s.waarde)) * 1.1;
+  chart.options.scales.y.max = maxValue;
 
   chart.update();
   updatePortfolio();
