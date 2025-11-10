@@ -111,28 +111,34 @@ function tick() {
   chart.update();
   updatePortfolio();
 }
-
-// --- Buy/Sell Functions ---
+//function koop
 function koop(aandeel, aantal, speler) {
   const stock = stocks[aandeel];
   const player = players[speler];
   const prijs = stock.waarde * aantal;
 
-  // Limit: 10 at €50
+  // Global limit: 10 at €50
   const maxAllowed = Math.max(1, Math.floor(10 * (50 / stock.waarde)));
-  const currentOwned = player.aandelen[aandeel] || 0;
-  if (currentOwned + aantal > maxAllowed) {
-    log(`❌ ${speler} kan max ${maxAllowed}x ${aandeel} kopen.`);
+
+  // Count total owned by all players
+  let totalOwned = 0;
+  for (let p in players) {
+    totalOwned += players[p].aandelen[aandeel] || 0;
+  }
+
+  if (totalOwned + aantal > maxAllowed) {
+    log(`❌ ${speler} kan max ${maxAllowed}x ${aandeel} kopen (globaal).`);
     return;
   }
 
   if (player.geld >= prijs) {
     player.geld -= prijs;
-    player.aandelen[aandeel] = currentOwned + aantal;
+    player.aandelen[aandeel] = (player.aandelen[aandeel] || 0) + aantal;
     log(`✅ ${speler} kocht ${aantal}x ${aandeel} voor €${prijs.toFixed(2)}`);
     updatePortfolio();
   } else log(`❌ ${speler} heeft niet genoeg geld!`);
 }
+
 
 function verkoop(aandeel, aantal, speler) {
   const player = players[speler];
