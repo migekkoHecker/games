@@ -54,58 +54,18 @@ function log(msg) {
   logBox.scrollTop = logBox.scrollHeight;
 }
 
-// --- Portfolio & Market Update ---
-function updatePortfolio() {
-  const playerName = document.getElementById('player').value;
-  const player = players[playerName];
-
-  // Portfolio tab
-  const div = document.getElementById('portfolio');
-  let totalValue = player.geld;
-  let html = `<h3>${playerName}'s Rekening</h3>`;
-  html += `<p><strong>Geld:</strong> €${Math.round(player.geld)}</p>`;
-  html += `<table><tr><th>Aandeel</th><th>Aantal</th><th>Waarde/stuk</th><th>Verkoopwaarde</th></tr>`;
-  for (let [aandeel, aantal] of Object.entries(player.aandelen)) {
-    const waarde = stocks[aandeel].waarde;
-    const verkoopWaarde = waarde * 0.9;
-    const totaal = aantal * verkoopWaarde;
-    totalValue += totaal;
-    html += `<tr>
-      <td>${aandeel}</td>
-      <td>${aantal}</td>
-      <td>€${Math.round(waarde)}</td>
-      <td>€${Math.round(totaal)}</td>
-    </tr>`;
-  }
-  html += `</table><p><strong>Totaalwaarde (inclusief verkoopwaarde):</strong> €${Math.round(totalValue)}</p>`;
-  div.innerHTML = html;
-
-  // Market tab
-  const marketDiv = document.getElementById('market');
-  let marketHtml = `<h3>Stock Market Info</h3>`;
-  marketHtml += `<table><tr>
-    <th>Aandeel</th><th>Waarde</th>${playerName === "admin" ? "<th>Succes%</th>" : ""}
-    <th>Owned/Max</th><th>Totaal Marktwaarde</th>
-  </tr>`;
-
-  for (let [name, stock] of Object.entries(stocks)) {
-    const price = stock.waarde;
-    let maxAllowed = Math.round((price / 50) * 10);
-    if (maxAllowed < 1 && price > 0) maxAllowed = 1;
-
-    let totalOwned = Object.values(players).reduce((sum, p) => sum + (p.aandelen[name] || 0), 0);
-    let totalMarketValue = totalOwned * price;
-
-    marketHtml += `<tr>
-      <td>${name}</td>
-      <td>€${Math.round(price)}</td>
-      ${playerName === "admin" ? `<td>${stock.succes.toFixed(2)}%</td>` : ""}
-      <td>${totalOwned}/${maxAllowed}</td>
-      <td>€${Math.round(totalMarketValue)}</td>
-    </tr>`;
-  }
-  marketHtml += `</table>`;
-  marketDiv.innerHTML = marketHtml;
+// --- Market Cycle Event ---
+let marketCycle = {
+  active: false,
+  stage: 0,      // 0=inactive, 1=80%, 2=25%, 3=50%
+  ticksLeft: 0
+};
+function startMarketCycle() {
+  marketCycle.active = true;
+  marketCycle.stage = 1;
+  marketCycle.ticksLeft = 30;
+  for (let s of Object.values(stocks)) s.succes = 80;
+  log("📈 Market Cycle gestart: succes 80% voor 30 ticks!");
 }
 
 // --- Tick Function ---
@@ -113,43 +73,55 @@ function tick() {
   // --- Random Market Events ---
   const rand = Math.random();
 
-  if (rand < 0.005) { // 0.5% kans op crash
+  // Crash (-10%) & Boom (+10%)
+  if (rand < 0.02) { 
     log("💥 Market Crash! Aandelen verliezen 10% waarde!");
-    for (let stock of Object.values(stocks)) {
-      stock.waarde *= 0.9;
-    }
-
-  } else if (rand < 0.01) { // 0.5% kans op boom
-    log("🚀 Market Boom! Aandelen stijgen met 10%!");
-    for (let stock of Object.values(stocks)) {
-      stock.waarde *= 1.1;
-    }
-
-  } else if (rand < 0.015) { // 0.5% kans op speciaal event
+    for (let stock of Object.values(stocks)) stock.waarde *= 0.9;
+  } else if (rand < 0.04) {
+    log("🚀 Market Boom! Aandelen stijgen 10%!");
+    for (let stock of Object.values(stocks)) stock.waarde *= 1.1;
+  } else if (rand < 0.06) {
+    // Special Stock Event (5 ticks, ±20–30 per tick)
     const stockNames = Object.keys(stocks);
     const name = stockNames[Math.floor(Math.random() * stockNames.length)];
     const stock = stocks[name];
     stock.eventTicks = 5;
-    const isPositive = Math.random() < 0.5;
-    stock.eventDirection = isPositive ? 1 : -1;
-    log(`✨ Speciaal event voor ${name}! Waarde verandert 5 ticks lang met ${isPositive ? '+' : '-'}20–30 per tick`);
+    stock.eventBoost = (Math.random() < 0.5 ? 1 : -1) * (20 + Math.random() * 10);
+    log(`✨ Speciaal event voor ${name}! Waarde verandert ${stock.eventBoost > 0 ? '+' : ''}${Math.round(stock.eventBoost)} per tick voor 5 ticks.`);
+  }
+
+  // --- Market Cycle Event Handling ---
+  if (marketCycle.active) {
+    marketCycle.ticksLeft--;
+    if (marketCycle.ticksLeft <= 0) {
+      if (marketCycle.stage === 1) {
+        marketCycle.stage = 2;
+        marketCycle.ticksLeft = 90;
+        for (let s of Object.values(stocks)) s.succes = 25;
+        log("📉 Market Cycle: succes 25% voor 90 ticks!");
+      } else if (marketCycle.stage === 2) {
+        marketCycle.stage = 3;
+        for (let s of Object.values(stocks)) s.succes = 50;
+        marketCycle.active = false;
+        log("🔄 Market Cycle reset: succes 50%!");
+      }
+    }
   }
 
   // --- Succes fluctueert lichtjes ---
   for (let stock of Object.values(stocks)) {
-    stock.succes += (Math.random() * 6) - 3; // -3 tot +3
-    stock.succes = Math.max(20, Math.min(80, stock.succes)); // tussen 20 en 80
+    stock.succes += (Math.random() * 6) - 3;
+    stock.succes = Math.max(20, Math.min(80, stock.succes));
   }
 
-  // --- Waarde verandert per tick ---
+  // --- Waarde per tick ---
   for (let [name, info] of Object.entries(stocks)) {
-    // Speciaal event actief
+    // Special stock event
     if (info.eventTicks && info.eventTicks > 0) {
-      const delta = info.eventDirection * (20 + Math.random() * 10);
-      info.waarde += delta;
+      info.waarde += info.eventBoost;
       info.eventTicks--;
       if (info.eventTicks === 0) {
-        delete info.eventDirection;
+        delete info.eventBoost;
         log(`✨ Event voor ${name} is voorbij.`);
       }
     } else {
@@ -158,13 +130,11 @@ function tick() {
       if (info.waarde > 200) baseChance -= 15;
       if (info.waarde < 50) baseChance += 10;
       if (info.waarde < 20) baseChance += 20;
-
       const change = Math.random() * 6;
       if (Math.random() * 100 < baseChance) info.waarde += change;
       else info.waarde -= change;
     }
 
-    // Grenzen en verliezen
     if (info.waarde < 0) info.waarde = 0;
     if (info.waarde < 1) info.lowCount++;
     else info.lowCount = 0;
@@ -187,10 +157,7 @@ function tick() {
   }
 
   // --- Update chart & portfolio ---
-  chart.options.scales.y.max = Math.max(
-    100,
-    ...Object.values(stocks).map(s => typeof s.waarde === "number" ? s.waarde * 1.1 : 0)
-  );
+  chart.options.scales.y.max = Math.max(100, ...Object.values(stocks).map(s => s.waarde * 1.1));
   chart.update();
   updatePortfolio();
 }
@@ -200,12 +167,10 @@ function koop(aandeel, aantal, speler) {
   const stock = stocks[aandeel];
   const player = players[speler];
   const prijs = stock.waarde * aantal;
-
   if ((player.aandelen[aandeel] || 0) + aantal > Math.round((stock.waarde / 50) * 10)) {
     log(`❌ ${speler} kan niet meer kopen.`);
     return;
   }
-
   if (player.geld >= prijs) {
     player.geld -= prijs;
     player.aandelen[aandeel] = (player.aandelen[aandeel] || 0) + aantal;
@@ -231,8 +196,7 @@ function verkoop(aandeel, aantal, speler) {
 // --- Save / Load ---
 function saveGameToClipboard() {
   const data = { stocks, buffers, players };
-  const json = JSON.stringify(data, null, 2);
-  navigator.clipboard.writeText(json).then(() => log("💾 Game saved to clipboard!"));
+  navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => log("💾 Game saved!"));
 }
 
 function loadGameFromClipboard() {
@@ -246,7 +210,7 @@ function loadGameFromClipboard() {
     chart.data.datasets.forEach(ds => ds.data = buffers[ds.label]);
     chart.update();
     updatePortfolio();
-    log("📂 Game loaded from clipboard!");
+    log("📂 Game loaded!");
   } catch (err) {
     log("❌ Failed to load save: " + err);
   }
@@ -290,3 +254,22 @@ document.querySelectorAll('.tab').forEach(tab => {
 
 // --- Start ticker ---
 setInterval(tick, 1000);
+
+// --- Console Triggers ---
+window.triggerCrash = () => {
+  log("💥 Manual Crash!");
+  for (let s of Object.values(stocks)) s.waarde *= 0.9;
+};
+window.triggerBoom = () => {
+  log("🚀 Manual Boom!");
+  for (let s of Object.values(stocks)) s.waarde *= 1.1;
+};
+window.triggerSpecial = () => {
+  const stockNames = Object.keys(stocks);
+  const name = stockNames[Math.floor(Math.random() * stockNames.length)];
+  const stock = stocks[name];
+  stock.eventTicks = 5;
+  stock.eventBoost = (Math.random() < 0.5 ? 1 : -1) * (20 + Math.random() * 10);
+  log(`✨ Manual Special Event voor ${name}: ${stock.eventBoost > 0 ? '+' : ''}${Math.round(stock.eventBoost)} per tick`);
+};
+window.triggerMarketCycle = startMarketCycle;
