@@ -34,20 +34,18 @@ const chart = new Chart(ctx, {
     responsive: false,
     maintainAspectRatio: false,
     animation: false,
+    layout: { padding: { left: 50, right: 20, top: 20, bottom: 20 } },
     scales: {
       y: {
         beginAtZero: true,
-        ticks: {
-          font: { size: 14 },
-          callback: value => Math.round(value)  // round for display
-        },
+        ticks: { font: { size: 14 }, callback: value => Math.round(value) },
         suggestedMin: 0,
-        suggestedMax: 100  // minimum graph height
+        suggestedMax: 100
       },
       x: { ticks: { font: { size: 12 } } }
     },
     plugins: {
-      legend: { labels: { font: { size: 14 } } },
+      legend: { position: 'right', labels: { font: { size: 14 }, boxWidth: 20 } },
       title: { display: true, text: 'Stock Prices', font: { size: 16 } }
     }
   }
@@ -55,7 +53,7 @@ const chart = new Chart(ctx, {
 
 // --- Logging ---
 function log(msg) {
-  const logBox = document.getElementById('console');
+  const logBox = document.getElementById('log'); // fixed
   logBox.textContent += msg + "\n";
   logBox.scrollTop = logBox.scrollHeight;
 }
@@ -69,7 +67,7 @@ function updatePortfolio() {
   const div = document.getElementById('portfolio');
   let totalValue = player.geld;
   let html = `<h3>${playerName}'s Rekening</h3>`;
-  html += `<p><strong>Geld:</strong> €${player.geld.toFixed(2)}</p>`;
+  html += `<p><strong>Geld:</strong> €${Math.round(player.geld)}</p>`;
   html += `<table><tr><th>Aandeel</th><th>Aantal</th><th>Waarde/stuk</th><th>Totaal</th></tr>`;
   for (let [aandeel, aantal] of Object.entries(player.aandelen)) {
     const waarde = stocks[aandeel].waarde;
@@ -83,13 +81,25 @@ function updatePortfolio() {
   // Market tab
   const marketDiv = document.getElementById('market');
   let marketHtml = `<h3>Stock Market Info</h3>`;
-  marketHtml += `<table><tr><th>Aandeel</th><th>Waarde</th><th>Max Aantal</th></tr>`;
+  marketHtml += `<table><tr><th>Aandeel</th><th>Waarde</th><th>Owned/Max</th><th>Totaal Marktwaarde</th></tr>`;
   for (let [name, stock] of Object.entries(stocks)) {
-    // Proportional stock limits based on reference points
+    // proportional max allowed
     const price = stock.waarde;
-    let maxAllowed = Math.round( (price / 50) * 10 ); // ref: 50$ = 10
-    if (maxAllowed < 1 && price > 0) maxAllowed = 1; // at least 1 if price > 0
-    marketHtml += `<tr><td>${name}</td><td>€${Math.round(price)}</td><td>${maxAllowed}</td></tr>`;
+    let maxAllowed = Math.round((price / 50) * 10);
+    if (maxAllowed < 1 && price > 0) maxAllowed = 1;
+
+    // total owned
+    let totalOwned = Object.values(players).reduce((sum, p) => sum + (p.aandelen[name] || 0), 0);
+
+    // total market value
+    let totalMarketValue = totalOwned * price;
+
+    marketHtml += `<tr>
+      <td>${name}</td>
+      <td>€${Math.round(price)}</td>
+      <td>${totalOwned}/${maxAllowed}</td>
+      <td>€${Math.round(totalMarketValue)}</td>
+    </tr>`;
   }
   marketHtml += `</table>`;
   marketDiv.innerHTML = marketHtml;
@@ -103,7 +113,6 @@ function tick() {
     else info.waarde -= change;
     if (info.waarde < 0) info.waarde = 0;
 
-    // Low-value tracking
     if (info.waarde < 1) info.lowCount++;
     else info.lowCount = 0;
 
@@ -136,7 +145,7 @@ function koop(aandeel, aantal, speler) {
   const stock = stocks[aandeel];
   const player = players[speler];
 
-  let maxAllowed = Math.round( (stock.waarde / 50) * 10 ); // proportional limit
+  let maxAllowed = Math.round((stock.waarde / 50) * 10);
   if (maxAllowed < 1 && stock.waarde > 0) maxAllowed = 1;
 
   const currentOwned = player.aandelen[aandeel] || 0;
