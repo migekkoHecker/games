@@ -309,5 +309,56 @@ document.querySelectorAll('.tab').forEach(tab => {
   };
 });
 
+// --- DEBUG COMMANDS (voor console testing) ---
+
+window.triggerCrash = function () {
+  log("💥 [DEBUG] Market Crash triggered manually!");
+  for (let stock of Object.values(stocks)) {
+    stock.waarde *= 0.7;
+  }
+  updatePortfolio();
+  chart.update();
+};
+
+window.triggerBoom = function () {
+  log("🚀 [DEBUG] Market Boom triggered manually!");
+  for (let stock of Object.values(stocks)) {
+    stock.waarde *= 1.3;
+  }
+  updatePortfolio();
+  chart.update();
+};
+
+window.triggerSpecial = function () {
+  const stockNames = Object.keys(stocks);
+  const name = stockNames[Math.floor(Math.random() * stockNames.length)];
+  const stock = stocks[name];
+  stock.eventTicks = 5;
+  stock.eventBoost = (Math.random() < 0.5 ? -1 : 1) * (20 + Math.random() * 10);
+  log(`✨ [DEBUG] Speciaal event voor ${name}! (+/-${Math.round(stock.eventBoost)} per tick, 5 ticks lang)`);
+};
+
+window.triggerCycle = function () {
+  log("📈 [DEBUG] Market cycle triggered manually!");
+  let phase = 0;
+
+  function startCyclePhase() {
+    if (phase === 0) {
+      for (let s of Object.values(stocks)) s.succes = 80;
+      log("📈 Bull market gestart (80% succes, 30 ticks)!");
+      setTimeout(() => { phase = 1; startCyclePhase(); }, 30000);
+    } else if (phase === 1) {
+      for (let s of Object.values(stocks)) s.succes = 25;
+      log("📉 Bear market gestart (25% succes, 90 ticks)!");
+      setTimeout(() => { phase = 2; startCyclePhase(); }, 90000);
+    } else {
+      for (let s of Object.values(stocks)) s.succes = 50;
+      log("🔄 Market cycle voorbij — terug naar normaal (50%)");
+    }
+  }
+
+  startCyclePhase();
+};
+
 // --- Start ticker ---
 setInterval(tick, 1000);
