@@ -1,16 +1,16 @@
 // --- Stocks & Players ---
 const stocks = {
-  "Oenvast BV": { waarde: Math.random()*90+10, succes:50, color:'red', lowCount:0 },
-  "GekkoGames": { waarde: Math.random()*90+10, succes:50, color:'blue', lowCount:0 },
-  "Minecraft": { waarde: Math.random()*90+10, succes:50, color:'green', lowCount:0 },
-  "Pon BV": { waarde: Math.random()*90+10, succes:50, color:'orange', lowCount:0 },
-  "Bombardilo BV": { waarde: Math.random()*90+10, succes:50, color:'purple', lowCount:0 },
+  "Oenvast BV": { waarde: Math.random() * 90 + 10, succes: 50, color: 'red', lowCount: 0 },
+  "GekkoGames": { waarde: Math.random() * 90 + 10, succes: 50, color: 'blue', lowCount: 0 },
+  "Minecraft": { waarde: Math.random() * 90 + 10, succes: 50, color: 'green', lowCount: 0 },
+  "Pon BV": { waarde: Math.random() * 90 + 10, succes: 50, color: 'orange', lowCount: 0 },
+  "Bombardilo BV": { waarde: Math.random() * 90 + 10, succes: 50, color: 'purple', lowCount: 0 },
 };
 
 const players = {
-  "Miguel": { geld:500, aandelen:{} },
-  "David": { geld:500, aandelen:{} },
-  "Alejandro": { geld:500, aandelen:{} },
+  "Miguel": { geld: 500, aandelen: {} },
+  "David": { geld: 500, aandelen: {} },
+  "Alejandro": { geld: 500, aandelen: {} },
 };
 
 const MAX_TICKS = 100;
@@ -34,7 +34,9 @@ const chart = new Chart(ctx, {
     responsive: false,
     maintainAspectRatio: false,
     animation: false,
-    scales: { y: { beginAtZero: true } }
+    scales: {
+      y: { beginAtZero: true }
+    }
   }
 });
 
@@ -45,7 +47,7 @@ function log(msg) {
   logBox.scrollTop = logBox.scrollHeight;
 }
 
-// --- Portfolio / Market Update ---
+// --- Portfolio & Market ---
 function updatePortfolio() {
   const playerName = document.getElementById('player').value;
   const player = players[playerName];
@@ -68,27 +70,29 @@ function updatePortfolio() {
 
   // Market tab
   const marketDiv = document.getElementById('market');
-  let marketHtml = `<h3>Stock Market Info</h3>`;
-  marketHtml += `<table><tr><th>Aandeel</th><th>Huidige Waarde</th><th>Max Aantal</th></tr>`;
-  for (let [name, stock] of Object.entries(stocks)) {
-    let maxAllowed = 0;
-    if (stock.waarde <= 0) maxAllowed = 0;
-    else if (stock.waarde <= 10) maxAllowed = 2;
-    else if (stock.waarde <= 50) maxAllowed = 10;
-    else if (stock.waarde <= 100) maxAllowed = 20;
-    else maxAllowed = 40;
+  if (marketDiv) {
+    let marketHtml = `<h3>Stock Market Info</h3>`;
+    marketHtml += `<table><tr><th>Aandeel</th><th>Huidige Waarde</th><th>Max Aantal</th></tr>`;
+    for (let [name, stock] of Object.entries(stocks)) {
+      let maxAllowed = 0;
+      if (stock.waarde <= 0) maxAllowed = 0;
+      else if (stock.waarde <= 10) maxAllowed = 2;
+      else if (stock.waarde <= 50) maxAllowed = 10;
+      else if (stock.waarde <= 100) maxAllowed = 20;
+      else maxAllowed = 40;
 
-    marketHtml += `<tr><td>${name}</td><td>€${stock.waarde.toFixed(2)}</td><td>${maxAllowed}</td></tr>`;
+      marketHtml += `<tr><td>${name}</td><td>€${stock.waarde.toFixed(2)}</td><td>${maxAllowed}</td></tr>`;
+    }
+    marketHtml += `</table>`;
+    marketDiv.innerHTML = marketHtml;
   }
-  marketHtml += `</table>`;
-  marketDiv.innerHTML = marketHtml;
 }
 
 // --- Tick Function ---
 function tick() {
   for (let [name, info] of Object.entries(stocks)) {
-    const change = Math.random()*10;
-    if (Math.random()*100 < info.succes) info.waarde += change;
+    const change = Math.random() * 10;
+    if (Math.random() * 100 < info.succes) info.waarde += change;
     else info.waarde -= change;
     if (info.waarde < 0) info.waarde = 0;
 
@@ -115,7 +119,8 @@ function tick() {
     if (buffers[name].length > MAX_TICKS) buffers[name].shift();
   }
 
-  chart.options.scales.y.max = Math.max(...Object.values(stocks).map(s => s.waarde))*1.1;
+  // Dynamic Y-axis scaling
+  chart.options.scales.y.max = Math.max(...Object.values(stocks).map(s => s.waarde)) * 1.1;
   chart.update();
   updatePortfolio();
 }
@@ -160,7 +165,7 @@ function verkoop(aandeel, aantal, speler) {
   } else log(`❌ ${speler} heeft niet genoeg aandelen!`);
 }
 
-// --- Setup ---
+// --- Setup Selects ---
 const playerSelect = document.getElementById('player');
 Object.keys(players).forEach(p => {
   const opt = document.createElement('option');
@@ -191,7 +196,7 @@ document.querySelectorAll('.tab').forEach(tab => {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
     document.getElementById(tab.dataset.tab).classList.add('active');
-  }
+  };
 });
 
 // --- Start Ticker ---
