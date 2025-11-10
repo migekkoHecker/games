@@ -31,8 +31,8 @@ const chart = new Chart(ctx, {
     }))
   },
   options: {
-    responsive: true,
-    maintainAspectRatio: false,
+    responsive: false,             // DISABLE responsive
+    maintainAspectRatio: false,    // keep fixed canvas height
     animation: false,
     scales: {
       y: {
@@ -42,6 +42,7 @@ const chart = new Chart(ctx, {
     }
   }
 });
+
 
 // --- Logging ---
 function log(msg) {
