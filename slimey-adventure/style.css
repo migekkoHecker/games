@@ -34,6 +34,10 @@ body {
   background: #4e4e4e;
 }
 
+.highlight {
+  outline: 3px solid #ffce00;
+}
+
 .token {
   width: 40px;
   height: 40px;
