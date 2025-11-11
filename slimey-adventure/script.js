@@ -67,10 +67,67 @@ function renderPlayers() {
 
 renderPlayers();
 
-// Track actions per turn
+// --- Turn display ---
+const turnDisplay = document.getElementById('current-turn');
+
+function showTurn() {
+  const p = players[activePlayerIndex];
+  turnDisplay.innerHTML = `
+    <strong>Current Turn:</strong> ${p.name} (${p.class})<br>
+    HP: ${p.hp} | Int: ${p.int}
+  `;
+}
+
+// --- Track actions per turn ---
 let actionsTaken = [];
 
-// --- Populate main menu (2x2 grid style) ---
+// --- Highlight and move ---
+function highlightMovement() {
+  const moveValue = rollDice(activePlayer.actions.movement.move);
+  console.log(`${activePlayer.name} can move up to ${moveValue} tiles`);
+
+  clearHighlights();
+
+  const w = currentMap.size.w;
+  const h = currentMap.size.h;
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (currentMap.logic[y][x] === 1) continue;
+
+      const dist = Math.abs(activePlayer.x - x) + Math.abs(activePlayer.y - y);
+      if (dist <= moveValue) {
+        const idx = y * w + x;
+        const cell = grid.children[idx];
+        cell.classList.add('highlight');
+
+        cell.onclick = () => {
+          movePlayerTo(activePlayer, x, y);
+        };
+      }
+    }
+  }
+}
+
+function movePlayerTo(player, x, y) {
+  player.x = x;
+  player.y = y;
+  renderPlayers();
+  console.log(`${player.name} moved to (${x}, ${y})`);
+  clearHighlights();
+}
+
+function clearHighlights() {
+  document.querySelectorAll('.cell').forEach(c => {
+    c.classList.remove('highlight');
+    c.onclick = null;
+  });
+}
+
+// --- Menu logic ---
+const submenu = document.getElementById('submenu');
+
+// --- Populate main menu (2x2) ---
 function populateMainMenu() {
   submenu.innerHTML = '';
   submenu.style.display = 'flex';
@@ -118,6 +175,7 @@ function populateActionSubmenu(options) {
   submenu.style.width = '260px';
 
   const keys = Object.keys(options);
+
   keys.forEach((key, idx) => {
     const action = options[key];
     const btn = document.createElement('button');
@@ -126,7 +184,7 @@ function populateActionSubmenu(options) {
     btn.style.padding = '10px';
     btn.style.fontSize = '14px';
 
-    // Disable if action already used
+    // Disable if already used this turn
     if (actionsTaken.includes(key)) {
       btn.disabled = true;
       btn.style.opacity = '0.5';
@@ -136,16 +194,12 @@ function populateActionSubmenu(options) {
       console.log(`${activePlayer.name} selected ${action.name}`, action);
       actionsTaken.push(key);
 
-      if (key === 'movement') {
-        highlightMovement();
-      }
+      if (key === 'movement') highlightMovement();
 
-      // Check if turn is over (2 actions max)
       if (actionsTaken.length >= 2) {
         nextTurn();
-        actionsTaken = [];
       } else {
-        // stay in menu for 2nd action
+        // back to main menu for 2nd action
         populateMainMenu();
       }
     };
@@ -153,7 +207,7 @@ function populateActionSubmenu(options) {
     submenu.appendChild(btn);
   });
 
-  // Fill empty grid slots to keep 2x2 layout
+  // Fill empty slots to keep 2x2 layout
   if (keys.length < 4) {
     for (let i = keys.length; i < 4; i++) {
       const empty = document.createElement('div');
@@ -163,115 +217,16 @@ function populateActionSubmenu(options) {
   }
 }
 
-// --- Initialize menu ---
-populateMainMenu();
-
-
-// --- Turn display ---
-const turnDisplay = document.getElementById('current-turn');
-
-function showTurn() {
-  const p = players[activePlayerIndex];
-  turnDisplay.innerHTML = `
-    <strong>Current Turn:</strong> ${p.name} (${p.class})<br>
-    HP: ${p.hp} | Int: ${p.int}
-  `;
-}
-
-showTurn();
-
 // --- Next turn ---
 function nextTurn() {
   activePlayerIndex = (activePlayerIndex + 1) % players.length;
   activePlayer = players[activePlayerIndex];
+  actionsTaken = [];
   showTurn();
   clearHighlights();
-  populateSubmenu(activePlayer.actions);
+  populateMainMenu();
 }
 
-// --- Highlight and move ---
-function highlightMovement() {
-  const moveValue = rollDice(activePlayer.actions.movement.move);
-  console.log(`${activePlayer.name} can move up to ${moveValue} tiles`);
-
-  clearHighlights();
-
-  const w = currentMap.size.w;
-  const h = currentMap.size.h;
-
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      if (currentMap.logic[y][x] === 1) continue;
-
-      const dist = Math.abs(activePlayer.x - x) + Math.abs(activePlayer.y - y);
-      if (dist <= moveValue) {
-        const idx = y * w + x;
-        const cell = grid.children[idx];
-        cell.classList.add('highlight');
-
-        cell.onclick = () => {
-          movePlayerTo(activePlayer, x, y);
-        };
-      }
-    }
-  }
-}
-
-function movePlayerTo(player, x, y) {
-  player.x = x;
-  player.y = y;
-  renderPlayers();
-  console.log(`${player.name} moved to (${x}, ${y})`);
-  clearHighlights();
-}
-
-function clearHighlights() {
-  document.querySelectorAll('.cell').forEach(c => {
-    c.classList.remove('highlight');
-    c.onclick = null;
-  });
-}
-
-// --- Menu logic ---
-const submenu = document.getElementById('submenu');
-const skipButton = document.getElementById('skipTurn');
-
-// Main menu clicks
-document.querySelectorAll('.main-menu .menu-item').forEach(item => {
-  item.addEventListener('click', () => {
-    const type = item.dataset.type;
-    if (!type) return;
-
-    if (type === "action") populateSubmenu(activePlayer.actions);
-    else if (type === "ability") populateSubmenu({ placeholder: { name: "Ability (coming later)" } });
-    else if (type === "item") populateSubmenu({ placeholder: { name: "Item (coming later)" } });
-  });
-});
-
-// Skip turn
-skipButton.onclick = () => {
-  console.log(`${activePlayer.name} skipped turn`);
-  nextTurn();
-};
-
-// Populate submenu dynamically
-function populateSubmenu(options) {
-  submenu.innerHTML = '';
-  submenu.style.display = 'flex';
-  for (const key in options) {
-    const action = options[key];
-    const li = document.createElement('li');
-    li.textContent = action.name;
-
-    li.onclick = () => {
-      console.log(`${activePlayer.name} selected ${action.name}`, action);
-      submenu.style.display = 'none';
-
-      if (key === 'movement') {
-        highlightMovement();
-      }
-    };
-
-    submenu.appendChild(li);
-  }
-}
+// --- Initialize ---
+showTurn();
+populateMainMenu();
