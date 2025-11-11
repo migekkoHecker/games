@@ -275,14 +275,6 @@ function populateActionSubmenu(actions) {
 
     submenu.appendChild(btn);
   });
-
-  // Fill empty slots to maintain 2x2 layout
-  const emptySlots = 4 - Object.keys(actions).length;
-  for (let i = 0; i < emptySlots; i++) {
-    const empty = document.createElement('div');
-    empty.style.flex = '1 1 45%';
-    submenu.appendChild(empty);
-  }
 }
 
 // Skip Turn button
@@ -306,6 +298,7 @@ function nextTurn() {
   clearHighlights();
   populateMainMenu();
 }
+
 
 // --- Initialize ---
 showTurn();
