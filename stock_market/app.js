@@ -8,9 +8,9 @@ const stocks = {
 };
 
 const players = {
-  "Miguel": { geld: 500, aandelen: {} },
-  "David": { geld: 500, aandelen: {} },
-  "Alejandro": { geld: 500, aandelen: {} },
+  "Migekko": { geld: 500, aandelen: {} },
+  "Player 2": { geld: 500, aandelen: {} },
+  "Player 3": { geld: 500, aandelen: {} },
   "admin": { geld: 1000000, aandelen: {} }
 };
 
