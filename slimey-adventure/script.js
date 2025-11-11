@@ -67,6 +67,106 @@ function renderPlayers() {
 
 renderPlayers();
 
+// Track actions per turn
+let actionsTaken = [];
+
+// --- Populate main menu (2x2 grid style) ---
+function populateMainMenu() {
+  submenu.innerHTML = '';
+  submenu.style.display = 'flex';
+  submenu.style.flexWrap = 'wrap';
+  submenu.style.gap = '10px';
+  submenu.style.width = '260px';
+
+  const mainMenuOptions = [
+    { name: 'Actions', type: 'action' },
+    { name: 'Ability', type: 'ability' },
+    { name: 'Item', type: 'item' },
+    { name: 'Skip Turn', type: 'skip' }
+  ];
+
+  mainMenuOptions.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.textContent = opt.name;
+    btn.style.flex = '1 1 45%';
+    btn.style.padding = '10px';
+    btn.style.fontSize = '14px';
+
+    btn.onclick = () => {
+      if (opt.type === 'skip') {
+        console.log(`${activePlayer.name} skipped turn`);
+        nextTurn();
+      } else if (opt.type === 'action') {
+        populateActionSubmenu(activePlayer.actions);
+      } else if (opt.type === 'ability') {
+        populateActionSubmenu({ placeholder: { name: 'Ability (coming later)' } });
+      } else if (opt.type === 'item') {
+        populateActionSubmenu({ placeholder: { name: 'Item (coming later)' } });
+      }
+    };
+
+    submenu.appendChild(btn);
+  });
+}
+
+// --- Action submenu (2x2) ---
+function populateActionSubmenu(options) {
+  submenu.innerHTML = '';
+  submenu.style.display = 'flex';
+  submenu.style.flexWrap = 'wrap';
+  submenu.style.gap = '10px';
+  submenu.style.width = '260px';
+
+  const keys = Object.keys(options);
+  keys.forEach((key, idx) => {
+    const action = options[key];
+    const btn = document.createElement('button');
+    btn.textContent = action.name;
+    btn.style.flex = '1 1 45%';
+    btn.style.padding = '10px';
+    btn.style.fontSize = '14px';
+
+    // Disable if action already used
+    if (actionsTaken.includes(key)) {
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+    }
+
+    btn.onclick = () => {
+      console.log(`${activePlayer.name} selected ${action.name}`, action);
+      actionsTaken.push(key);
+
+      if (key === 'movement') {
+        highlightMovement();
+      }
+
+      // Check if turn is over (2 actions max)
+      if (actionsTaken.length >= 2) {
+        nextTurn();
+        actionsTaken = [];
+      } else {
+        // stay in menu for 2nd action
+        populateMainMenu();
+      }
+    };
+
+    submenu.appendChild(btn);
+  });
+
+  // Fill empty grid slots to keep 2x2 layout
+  if (keys.length < 4) {
+    for (let i = keys.length; i < 4; i++) {
+      const empty = document.createElement('div');
+      empty.style.flex = '1 1 45%';
+      submenu.appendChild(empty);
+    }
+  }
+}
+
+// --- Initialize menu ---
+populateMainMenu();
+
+
 // --- Turn display ---
 const turnDisplay = document.getElementById('current-turn');
 
