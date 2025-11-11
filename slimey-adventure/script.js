@@ -17,6 +17,133 @@ function rollDice(diceStr) {
   return total + modifier;
 }
 
+// === Action type functions ===
+
+// --- Move ---
+function moveAction(player, tiles) {
+  const w = currentMap.size.w;
+  const h = currentMap.size.h;
+  clearHighlights();
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (currentMap.logic[y][x] === 1) continue; // blocked
+      const dist = Math.abs(player.x - x) + Math.abs(player.y - y);
+      if (dist <= tiles) {
+        const idx = y * w + x;
+        const cell = grid.children[idx];
+        cell.classList.add('highlight');
+        cell.style.cursor = 'pointer';
+
+        cell.onclick = () => {
+          player.x = x;
+          player.y = y;
+          renderPlayers();
+          clearHighlights();
+          console.log(`${player.name} moved to (${x}, ${y})`);
+        };
+      }
+    }
+  }
+}
+
+// --- Attack ---
+function attackAction(attacker, target, damage) {
+  const totalDamage = Math.max(damage - (target.shield || 0), 0);
+  target.hp -= totalDamage;
+  console.log(`${attacker.name} attacked ${target.name} for ${totalDamage} damage. ${target.name} HP: ${target.hp}`);
+}
+
+// --- Range check ---
+function inRange(attacker, target, range) {
+  const dist = Math.abs(attacker.x - target.x) + Math.abs(attacker.y - target.y);
+  return dist <= range;
+}
+
+// --- Heal ---
+function healAction(player, target, healAmount) {
+  target.hp += healAmount;
+  console.log(`${player.name} healed ${target.name} for ${healAmount} HP. New HP: ${target.hp}`);
+}
+
+// --- Shield ---
+function shieldAction(player, amount) {
+  player.shield = (player.shield || 0) + amount;
+  console.log(`${player.name} gains ${amount} shield. Total shield: ${player.shield}`);
+}
+
+// --- Cooldown ---
+function applyCooldown(actionObj) {
+  actionObj.currentCooldown = actionObj.cooldown;
+}
+
+// --- Target selection ---
+function selectTargets(attacker, targets, maxTargets) {
+  return targets.slice(0, maxTargets);
+}
+
+// --- Push / Pull ---
+function pushTarget(attacker, target, tiles) {
+  const dx = target.x - attacker.x;
+  const dy = target.y - attacker.y;
+  if (Math.abs(dx) > Math.abs(dy)) target.x += dx > 0 ? tiles : -tiles;
+  else target.y += dy > 0 ? tiles : -tiles;
+  console.log(`${target.name} was pushed to (${target.x}, ${target.y})`);
+}
+
+function pullTarget(attacker, target, tiles) {
+  const dx = attacker.x - target.x;
+  const dy = attacker.y - target.y;
+  if (Math.abs(dx) > Math.abs(dy)) target.x += dx > 0 ? tiles : -tiles;
+  else target.y += dy > 0 ? tiles : -tiles;
+  console.log(`${target.name} was pulled to (${target.x}, ${target.y})`);
+}
+
+// --- Destroy obstacles ---
+function destroyAction(x, y) {
+  if (currentMap.logic[y][x] === 1) {
+    currentMap.logic[y][x] = 0;
+    console.log(`Destroyed obstacle at (${x}, ${y})`);
+  }
+}
+
+// --- Pierce (attacks go through obstacles/players) ---
+function pierceAction(attacker, path, damage) {
+  for (const tile of path) {
+    const target = players.find(p => p.x === tile.x && p.y === tile.y);
+    if (target) attackAction(attacker, target, damage);
+  }
+}
+
+// --- Jump (move over obstacles) ---
+function jumpAction(player, x, y, maxJumps) {
+  // Simply move player ignoring obstacles for maxJumps tiles
+  const dist = Math.abs(player.x - x) + Math.abs(player.y - y);
+  if (dist <= maxJumps) {
+    player.x = x;
+    player.y = y;
+    renderPlayers();
+    console.log(`${player.name} jumped to (${x}, ${y})`);
+  }
+}
+
+// --- Status Effects ---
+function applyStatus(target, effect, value, duration) {
+  target.status = target.status || {};
+  target.status[effect] = { value, duration };
+  console.log(`${target.name} gained status ${effect} (${value}) for ${duration} turns`);
+}
+
+// --- Advantage / Disadvantage ---
+function applyAdvantage(attacker) {
+  attacker.advantage = true;
+}
+
+function applyDisadvantage(attacker) {
+  attacker.disadvantage = true;
+}
+
+
 // --- Setup map ---
 const currentMap = MAPS.meadow;
 const grid = document.getElementById('game');
