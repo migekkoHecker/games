@@ -1,42 +1,37 @@
 // === script.js ===
-// assumes data.js is loaded first!
 
-// 1. Choose which map to load
+// --- Setup map ---
 const currentMap = MAPS.meadow;
-
-// 2. Reference the HTML game container
 const grid = document.getElementById('game');
 grid.style.gridTemplateColumns = `repeat(${currentMap.size.w}, 60px)`;
 
-// 3. Draw the map visually
+// Draw map
 for (let y = 0; y < currentMap.size.h; y++) {
   for (let x = 0; x < currentMap.size.w; x++) {
     const tile = document.createElement('div');
     tile.classList.add('cell');
 
-    // get the art type (e.g. grass, wall, stone)
     const artType = currentMap.artLegend[currentMap.art[y][x]];
     tile.classList.add(artType);
 
-    // optional: mark walls for debugging
-    if (currentMap.logic[y][x] === 1) {
-      tile.dataset.blocked = "true";
-    }
+    if (currentMap.logic[y][x] === 1) tile.dataset.blocked = "true";
 
     grid.appendChild(tile);
   }
 }
 
-// 4. Create players from character data
+// --- Setup players ---
 const players = [
-  { ...CHARACTERS.ivo, x: 0, y: 0 },
-  { ...CHARACTERS.aria, x: 6, y: 4 },
-  { ...CHARACTERS.nox, x: 3, y: 2 }
+  { ...CHARACTERS.slime, x: 0, y: 0 },
+  { ...CHARACTERS.ridder, x: 6, y: 4 },
+  { ...CHARACTERS.boogschutter, x: 3, y: 2 }
 ];
 
-// 5. Function to render all players
+let activePlayerIndex = 0;
+let activePlayer = players[activePlayerIndex];
+
+// Render players
 function renderPlayers() {
-  // Remove old tokens
   document.querySelectorAll('.token').forEach(el => el.remove());
 
   players.forEach(p => {
@@ -47,33 +42,69 @@ function renderPlayers() {
     const token = document.createElement('div');
     token.className = 'token';
     token.style.background = p.color;
-    token.textContent = p.name[0]; // first letter of name
+    token.textContent = p.name[0];
 
     cell.appendChild(token);
   });
 }
 
-// 6. Draw the players
 renderPlayers();
 
-// 7. Example: simple turn-based UI placeholder
-const ui = document.getElementById('ui');
-let turnIndex = 0;
+// --- Turn display ---
+const turnDisplay = document.getElementById('current-turn');
 
 function showTurn() {
-  const player = players[turnIndex];
-  ui.innerHTML = `
-    <strong>Current Turn:</strong> ${player.name} (${player.class})<br>
-    HP: ${player.hp} | Special: ${player.special} | Abilities: ${player.abilities}
-    <br><button id="nextTurn">Next Turn</button>
+  const p = players[activePlayerIndex];
+  turnDisplay.innerHTML = `
+    <strong>Current Turn:</strong> ${p.name} (${p.class})<br>
+    HP: ${p.hp} | Int: ${p.int}
   `;
-  document.getElementById('nextTurn').onclick = () => nextTurn();
 }
 
-function nextTurn() {
-  turnIndex = (turnIndex + 1) % players.length;
-  showTurn();
-}
-
-// Initialize UI
 showTurn();
+
+// --- Next turn ---
+function nextTurn() {
+  activePlayerIndex = (activePlayerIndex + 1) % players.length;
+  activePlayer = players[activePlayerIndex];
+  showTurn();
+  populateSubmenu(activePlayer.actions);
+}
+
+// --- Menu logic ---
+const submenu = document.getElementById('submenu');
+const skipButton = document.getElementById('skipTurn');
+
+// Main menu clicks
+document.querySelectorAll('.main-menu .menu-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const type = item.dataset.type;
+    if (!type) return;
+
+    if (type === "action") populateSubmenu(activePlayer.actions);
+    else if (type === "ability") populateSubmenu({ placeholder: { name: "Ability (coming later)" } });
+    else if (type === "item") populateSubmenu({ placeholder: { name: "Item (coming later)" } });
+  });
+});
+
+// Skip turn
+skipButton.onclick = () => {
+  console.log(`${activePlayer.name} skipped turn`);
+  nextTurn();
+};
+
+// Populate submenu dynamically
+function populateSubmenu(options) {
+  submenu.innerHTML = '';
+  submenu.style.display = 'flex';
+  for (const key in options) {
+    const action = options[key];
+    const li = document.createElement('li');
+    li.textContent = action.name;
+    li.onclick = () => {
+      console.log(`${activePlayer.name} selected ${action.name}`, action);
+      submenu.style.display = 'none';
+    };
+    submenu.appendChild(li);
+  }
+}
