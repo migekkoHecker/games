@@ -20,6 +20,7 @@ function rollDice(diceStr) {
 // --- Setup map ---
 const currentMap = MAPS.meadow;
 const grid = document.getElementById('game');
+grid.style.display = 'grid';
 grid.style.gridTemplateColumns = `repeat(${currentMap.size.w}, 60px)`;
 
 // Draw map
@@ -100,9 +101,14 @@ function highlightMovement() {
         const idx = y * w + x;
         const cell = grid.children[idx];
         cell.classList.add('highlight');
+        cell.style.cursor = 'pointer';
 
         cell.onclick = () => {
           movePlayerTo(activePlayer, x, y);
+          actionsTaken.push('movement');
+
+          if (actionsTaken.length >= 2) nextTurn();
+          else populateMainMenu();
         };
       }
     }
@@ -192,16 +198,13 @@ function populateActionSubmenu(options) {
 
     btn.onclick = () => {
       console.log(`${activePlayer.name} selected ${action.name}`, action);
-      actionsTaken.push(key);
 
+      // Movement handled after clicking cell
       if (key === 'movement') highlightMovement();
+      else actionsTaken.push(key); // other actions count immediately
 
-      if (actionsTaken.length >= 2) {
-        nextTurn();
-      } else {
-        // back to main menu for 2nd action
-        populateMainMenu();
-      }
+      if (actionsTaken.length >= 2 && key !== 'movement') nextTurn();
+      else if (key !== 'movement') populateMainMenu();
     };
 
     submenu.appendChild(btn);
