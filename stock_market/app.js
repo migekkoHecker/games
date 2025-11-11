@@ -66,7 +66,7 @@ function startMarketCycle() {
   marketCycle.stage = 1;
   marketCycle.ticksLeft = 30;
   for (let s of Object.values(stocks)) s.succes = 80;
-  log("📈 Market Cycle gestart: succes 80% voor 30 ticks!");
+  log("📈 Market Cycle started: success 80% for 30 ticks!");
 }
 
 // --- Portfolio & Market Update ---
@@ -77,9 +77,9 @@ function updatePortfolio() {
   // Portfolio tab
   const div = document.getElementById('portfolio');
   let totalValue = player.geld;
-  let html = `<h3>${playerName}'s Rekening</h3>`;
-  html += `<p><strong>Geld:</strong> €${Math.round(player.geld)}</p>`;
-  html += `<table><tr><th>Aandeel</th><th>Aantal</th><th>Waarde/stuk</th><th>Verkoopwaarde</th></tr>`;
+  let html = `<h3>${playerName}'s Account</h3>`;
+  html += `<p><strong>Cash:</strong> €${Math.round(player.geld)}</p>`;
+  html += `<table><tr><th>Stock</th><th>Amount</th><th>Value/unit</th><th>Sell Value</th></tr>`;
   for (let [aandeel, aantal] of Object.entries(player.aandelen)) {
     const waarde = stocks[aandeel].waarde;
     const verkoopWaarde = waarde * 0.9;
@@ -92,15 +92,15 @@ function updatePortfolio() {
       <td>€${Math.round(totaal)}</td>
     </tr>`;
   }
-  html += `</table><p><strong>Totaalwaarde (inclusief verkoopwaarde):</strong> €${Math.round(totalValue)}</p>`;
+  html += `</table><p><strong>Total Value (including sell value):</strong> €${Math.round(totalValue)}</p>`;
   div.innerHTML = html;
 
   // Market tab
   const marketDiv = document.getElementById('market');
   let marketHtml = `<h3>Stock Market Info</h3>`;
   marketHtml += `<table><tr>
-    <th>Aandeel</th><th>Waarde</th>${playerName === "admin" ? "<th>Succes%</th>" : ""}
-    <th>Owned/Max</th><th>Totaal Marktwaarde</th>
+    <th>Stock</th><th>Value</th>${playerName === "admin" ? "<th>Success%</th>" : ""}
+    <th>Owned/Max</th><th>Total Market Value</th>
   </tr>`;
 
   for (let [name, stock] of Object.entries(stocks)) {
@@ -134,10 +134,10 @@ function tick() {
 
   // Crash (-10%) & Boom (+10%)
   if (rand < 0.02) { 
-    log("💥 Market Crash! Aandelen verliezen 10% waarde!");
+    log("💥 Market Crash! Stocks lose 10% value!");
     for (let stock of Object.values(stocks)) stock.waarde *= 0.9;
   } else if (rand < 0.04) {
-    log("🚀 Market Boom! Aandelen stijgen 10%!");
+    log("🚀 Market Boom! Stocks rise 10%!");
     for (let stock of Object.values(stocks)) stock.waarde *= 1.1;
   } else if (rand < 0.06) {
     // Special Stock Event (5 ticks, ±20–30 per tick, each tick random)
@@ -147,7 +147,7 @@ function tick() {
     stock.eventTicks = 5;
     stock.eventBoosts = Array.from({length: 5}, () => (Math.random() < 0.5 ? -1 : 1) * (20 + Math.random() * 10));
     stock.eventIndex = 0;
-    log(`✨ Speciaal event voor ${name}! Waarde verandert 5 ticks, random ±20–30 per tick.`);
+    log(`✨ Special event for ${name}! Value changes 5 ticks, random ±20–30 each tick.`);
   }
 
   // --- Market Cycle Event Handling ---
@@ -158,23 +158,23 @@ function tick() {
         marketCycle.stage = 2;
         marketCycle.ticksLeft = 90;
         for (let s of Object.values(stocks)) s.succes = 25;
-        log("📉 Market Cycle: succes 25% voor 90 ticks!");
+        log("📉 Market Cycle: success 25% for 90 ticks!");
       } else if (marketCycle.stage === 2) {
         marketCycle.stage = 3;
         for (let s of Object.values(stocks)) s.succes = 50;
         marketCycle.active = false;
-        log("🔄 Market Cycle reset: succes 50%!");
+        log("🔄 Market Cycle reset: success 50%!");
       }
     }
   }
 
-  // --- Succes fluctueert lichtjes ---
+  // --- Success fluctuates slightly ---
   for (let stock of Object.values(stocks)) {
     stock.succes += (Math.random() * 6) - 3;
     stock.succes = Math.max(20, Math.min(80, stock.succes));
   }
 
-  // --- Waarde per tick ---
+  // --- Value per tick ---
   for (let [name, info] of Object.entries(stocks)) {
     // Special stock event
     if (info.eventTicks && info.eventTicks > 0) {
@@ -185,7 +185,7 @@ function tick() {
       if (info.eventTicks === 0) {
         delete info.eventBoosts;
         delete info.eventIndex;
-        log(`✨ Event voor ${name} is voorbij.`);
+        log(`✨ Event for ${name} has ended.`);
       }
     } else {
       let baseChance = info.succes;
@@ -209,7 +209,7 @@ function tick() {
           const loss = Math.min(2, player.aandelen[name]);
           player.aandelen[name] -= loss;
           if (player.aandelen[name] <= 0) delete player.aandelen[name];
-          log(`⚠️ ${pname} verloor ${loss}x ${name} (waarde te laag)`);
+          log(`⚠️ ${pname} lost ${loss}x ${name} (value too low)`);
         }
       }
       info.lowCount = 0;
@@ -231,16 +231,16 @@ function koop(aandeel, aantal, speler) {
   const player = players[speler];
   const prijs = stock.waarde * aantal;
   if ((player.aandelen[aandeel] || 0) + aantal > Math.round((stock.waarde / 50) * 10)) {
-    log(`❌ ${speler} kan niet meer kopen.`);
+    log(`❌ ${speler} cannot buy more.`);
     return;
   }
   if (player.geld >= prijs) {
     player.geld -= prijs;
     player.aandelen[aandeel] = (player.aandelen[aandeel] || 0) + aantal;
     stock.succes = Math.min(stock.succes + 2, 100);
-    log(`✅ ${speler} kocht ${aantal}x ${aandeel} voor €${Math.round(prijs)}`);
+    log(`✅ ${speler} bought ${aantal}x ${aandeel} for €${Math.round(prijs)}`);
     updatePortfolio();
-  } else log(`❌ ${speler} heeft niet genoeg geld!`);
+  } else log(`❌ ${speler} does not have enough money!`);
 }
 
 function verkoop(aandeel, aantal, speler) {
@@ -251,9 +251,9 @@ function verkoop(aandeel, aantal, speler) {
     const opbrengst = stocks[aandeel].waarde * aantal * 0.9;
     player.geld += opbrengst;
     stocks[aandeel].succes = Math.max(stocks[aandeel].succes - 2, 0);
-    log(`💰 ${speler} verkocht ${aantal}x ${aandeel} voor €${Math.round(opbrengst)} (90%)`);
+    log(`💰 ${speler} sold ${aantal}x ${aandeel} for €${Math.round(opbrengst)} (90%)`);
     updatePortfolio();
-  } else log(`❌ ${speler} heeft niet genoeg aandelen!`);
+  } else log(`❌ ${speler} does not have enough stocks!`);
 }
 
 // --- Save / Load ---
@@ -334,6 +334,6 @@ window.triggerSpecial = () => {
   stock.eventTicks = 5;
   stock.eventBoosts = Array.from({length: 5}, () => (Math.random() < 0.5 ? -1 : 1) * (20 + Math.random() * 10));
   stock.eventIndex = 0;
-  log(`✨ Manual Special Event voor ${name}: 5 ticks, random ±20–30 per tick`);
+  log(`✨ Manual Special Event for ${name}: 5 ticks, random ±20–30 each tick`);
 };
 window.triggerMarketCycle = startMarketCycle;
