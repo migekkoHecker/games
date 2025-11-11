@@ -1,5 +1,3 @@
-// === data.js ===
-
 // === CHARACTERS ===
 const CHARACTERS = {
   slime: {
@@ -87,7 +85,6 @@ const CHARACTERS = {
     }
   }
 };
-
 
 // === MAPS ===
 const MAPS = {
