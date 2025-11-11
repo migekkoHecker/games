@@ -22,22 +22,11 @@ body {
   justify-content: center;
 }
 
-.grass {
-  background: #9be79b;
-}
+.grass { background: #9be79b; }
+.stone { background: #a3a3a3; }
+.wall { background: #4e4e4e; }
 
-.stone {
-  background: #a3a3a3;
-}
-
-.wall {
-  background: #4e4e4e;
-}
-
-.highlight {
-  outline: 3px solid #ffce00;
-  cursor: pointer;
-}
+.highlight { outline: 3px solid #ffce00; cursor: pointer; }
 
 .token {
   width: 40px;
@@ -50,34 +39,33 @@ body {
   justify-content: center;
 }
 
-#menu {
-  margin-top: 20px;
-}
+#menu { margin-top: 20px; }
 
-/* Main menu and submenu grid layout */
 .menu-grid {
   display: grid;
   grid-template-columns: repeat(2, 120px);
+  grid-template-rows: repeat(2, 50px);
   gap: 10px;
-  justify-content: center;
-  margin-bottom: 10px;
 }
 
-.menu-grid button {
-  padding: 10px;
-  font-size: 14px;
-  border-radius: 6px;
+.menu-item {
   cursor: pointer;
   background: #f0f0f0;
-  border: none;
-  transition: background 0.2s;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 14px;
 }
 
-.menu-grid button:hover {
-  background: #e0e0e0;
-}
-
-/* Submenu hidden initially */
 .sub-menu {
   display: none;
+  gap: 10px;
 }
+
+.sub-menu button {
+  cursor: pointer;
+  background: #e0e0e0;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.sub-menu button:hover { background: #d0d0d0; }
