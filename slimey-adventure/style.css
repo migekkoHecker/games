@@ -9,7 +9,6 @@ body {
 
 #game {
   display: grid;
-  grid-template-columns: repeat(7, 60px);
   gap: 4px;
   margin: 20px 0;
 }
@@ -17,29 +16,10 @@ body {
 .cell {
   width: 60px;
   height: 60px;
-  background: #eaf7f0;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-}
-
-.token {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  color: #fff;
-  font-weight: bold;
-}
-
-
-#art
-
-.cell {
-  width: 48px;
-  height: 48px;
-  border-radius: 4px;
 }
 
 .grass {
@@ -54,11 +34,52 @@ body {
   background: #4e4e4e;
 }
 
-.lava {
-  background: #e4572e;
+.token {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.obsidian {
-  background: #2e2e40;
+#menu {
+  margin-top: 20px;
 }
 
+.main-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 10px 0;
+  display: flex;
+  gap: 15px;
+}
+
+.menu-item {
+  cursor: pointer;
+  background: #f0f0f0;
+  padding: 6px 12px;
+  border-radius: 6px;
+}
+
+.sub-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sub-menu li {
+  cursor: pointer;
+  background: #e0e0e0;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.sub-menu li:hover {
+  background: #d0d0d0;
+}
