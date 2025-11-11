@@ -193,70 +193,115 @@ function performAction(player,key){
 }
 
 // === Menu handling ===
-const mainMenuGrid=document.querySelector('.main-menu');
-const submenu=document.getElementById('submenu');
+const mainMenuGrid = document.querySelector('.main-menu');
+const submenu = document.getElementById('submenu');
 
-function populateMainMenu(){
-  mainMenuGrid.style.display='flex';
-  submenu.style.display='none';
-  submenu.innerHTML='';
-  const opts=[{name:'Actions',type:'action'},{name:'Ability',type:'ability'},{name:'Item',type:'item'},{name:'Skip Turn',type:'skip'}];
+function populateMainMenu() {
+  mainMenuGrid.style.display = 'grid';
+  mainMenuGrid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+  mainMenuGrid.style.gridGap = '10px';
+  mainMenuGrid.style.width = '260px';
 
-  opts.forEach(opt=>{
-    const btn=document.createElement('button');
-    btn.textContent=opt.name; btn.style.flex='1 1 45%'; btn.style.padding='10px'; btn.style.fontSize='14px';
-    btn.onclick=()=>{
-      if(opt.type==='skip'){console.log(`${activePlayer.name} skipped turn`); nextTurn();}
-      else if(opt.type==='action') populateActionSubmenu(activePlayer.actions);
-      else populateActionSubmenu({placeholder:{name:`${opt.name} (coming later)`}});
+  submenu.style.display = 'none';
+  submenu.innerHTML = '';
+
+  const opts = [
+    { name: 'Actions', type: 'action' },
+    { name: 'Ability', type: 'ability' },
+    { name: 'Item', type: 'item' },
+    { name: 'Skip Turn', type: 'skip' }
+  ];
+
+  // Clear existing buttons
+  mainMenuGrid.innerHTML = '';
+
+  opts.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.textContent = opt.name;
+    btn.style.padding = '10px';
+    btn.style.fontSize = '14px';
+    btn.style.flex = '1 1 45%';
+
+    btn.onclick = () => {
+      if (opt.type === 'skip') {
+        console.log(`${activePlayer.name} skipped turn`);
+        nextTurn();
+      } else if (opt.type === 'action') {
+        populateActionSubmenu(activePlayer.actions);
+      } else {
+        populateActionSubmenu({ placeholder: { name: `${opt.name} (coming later)` } });
+      }
     };
-    submenu.appendChild(btn);
+
+    mainMenuGrid.appendChild(btn);
   });
 }
 
-function populateActionSubmenu(options){
-  mainMenuGrid.style.display='none';
-  submenu.style.display='flex';
-  submenu.style.flexWrap='wrap';
-  submenu.style.gap='10px';
-  submenu.style.width='260px';
-  submenu.innerHTML='';
+function populateActionSubmenu(actions) {
+  // Hide main menu
+  mainMenuGrid.style.display = 'none';
 
-  Object.keys(options).forEach(key=>{
-    const action=options[key];
-    const btn=document.createElement('button');
-    btn.textContent=action.name;
-    btn.style.flex='1 1 45%';
-    btn.style.padding='10px';
-    btn.style.fontSize='14px';
-    if(action.currentCooldown>0){btn.disabled=true; btn.style.opacity=0.5;}
-    btn.onclick=()=>{
-      performAction(activePlayer,key);
+  // Show submenu as 2x2 grid
+  submenu.style.display = 'grid';
+  submenu.style.gridTemplateColumns = 'repeat(2, 1fr)';
+  submenu.style.gridGap = '10px';
+  submenu.style.width = '260px';
+  submenu.innerHTML = '';
+
+  Object.keys(actions).forEach(key => {
+    const action = actions[key];
+    const btn = document.createElement('button');
+    btn.textContent = action.name;
+    btn.style.padding = '10px';
+    btn.style.fontSize = '14px';
+    btn.style.flex = '1 1 45%';
+
+    if (action.currentCooldown > 0) {
+      btn.disabled = true;
+      btn.style.opacity = 0.5;
+    }
+
+    btn.onclick = () => {
+      performAction(activePlayer, key);
       actionsTaken.push(key);
-      if(action.cooldown) action.currentCooldown = action.cooldown;
+
+      // Apply cooldown if defined
+      if (action.cooldown) action.currentCooldown = action.cooldown;
+
+      // After action, check if turn ends
+      if (actionsTaken.length >= 2) nextTurn();
+      else populateMainMenu();
     };
+
     submenu.appendChild(btn);
   });
 
-  const needed = 4 - Object.keys(options).length;
-  for(let i=0;i<needed;i++){
+  // Fill empty slots to maintain 2x2 layout
+  const emptySlots = 4 - Object.keys(actions).length;
+  for (let i = 0; i < emptySlots; i++) {
     const empty = document.createElement('div');
-    empty.style.flex='1 1 45%';
+    empty.style.flex = '1 1 45%';
     submenu.appendChild(empty);
   }
 }
 
 // Skip Turn button
-document.getElementById('skipTurn').onclick=()=>{console.log(`${activePlayer.name} skipped turn`); nextTurn();};
+document.getElementById('skipTurn').onclick = () => {
+  console.log(`${activePlayer.name} skipped turn`);
+  nextTurn();
+};
 
-function nextTurn(){
-  activePlayerIndex=(activePlayerIndex+1)%players.length;
-  activePlayer=players[activePlayerIndex];
-  actionsTaken=[];
+function nextTurn() {
+  // Move to next player
+  activePlayerIndex = (activePlayerIndex + 1) % players.length;
+  activePlayer = players[activePlayerIndex];
+  actionsTaken = [];
+
   // Reduce cooldowns
-  Object.values(activePlayer.actions).forEach(a=>{
-    if(a.currentCooldown>0) a.currentCooldown--;
+  Object.values(activePlayer.actions).forEach(a => {
+    if (a.currentCooldown > 0) a.currentCooldown--;
   });
+
   showTurn();
   clearHighlights();
   populateMainMenu();
