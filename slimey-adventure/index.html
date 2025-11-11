@@ -1,17 +1,32 @@
 <!doctype html>
-<html lang="nl">
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Slimey Adventure</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>Slimey Adventure</h1>
+
   <div id="game"></div>
-  <div id="ui"></div>
+
+  <div id="ui">
+    <div id="current-turn"></div>
+    <div id="menu">
+      <ul class="main-menu">
+        <li class="menu-item" data-type="action">Action</li>
+        <li class="menu-item" data-type="ability">Ability</li>
+        <li class="menu-item" data-type="item">Item</li>
+        <li class="menu-item">
+          <button id="skipTurn">Skip Turn</button>
+        </li>
+      </ul>
+      <ul class="sub-menu" id="submenu"></ul>
+    </div>
+  </div>
+
   <script src="data.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
-
