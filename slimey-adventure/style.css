@@ -36,6 +36,7 @@ body {
 
 .highlight {
   outline: 3px solid #ffce00;
+  cursor: pointer;
 }
 
 .token {
@@ -53,37 +54,30 @@ body {
   margin-top: 20px;
 }
 
-.main-menu {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 10px 0;
-  display: flex;
-  gap: 15px;
+/* Main menu and submenu grid layout */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 120px);
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 10px;
 }
 
-.menu-item {
+.menu-grid button {
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 6px;
   cursor: pointer;
   background: #f0f0f0;
-  padding: 6px 12px;
-  border-radius: 6px;
+  border: none;
+  transition: background 0.2s;
 }
 
-.sub-menu {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: none;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.sub-menu li {
-  cursor: pointer;
+.menu-grid button:hover {
   background: #e0e0e0;
-  padding: 4px 8px;
-  border-radius: 6px;
 }
 
-.sub-menu li:hover {
-  background: #d0d0d0;
+/* Submenu hidden initially */
+.sub-menu {
+  display: none;
 }
