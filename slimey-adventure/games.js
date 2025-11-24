@@ -1,7 +1,7 @@
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
-// canvas fit
+// Resize canvas
 function fitCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -19,21 +19,21 @@ window.addEventListener('keyup', e => keys[e.key] = false);
 
 // ------------------------
 // MAP CONFIGURATION
-// W = Wall, E = Empty, P = Player1, A = Player2, G = Goal
+// Legend: W = Wall, P = Player1 start, A = Player2 start, E = empty, G = goal, B = pushable block
 const maps = [
   {
-    name: "Labyrinth",
+    name: "Push Labyrinth",
     grid: [
-      ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],
-      ['W','P','E','E','W','E','E','E','W','E','E','E','E','W','E','E','E','E','A','W'],
-      ['W','E','W','E','W','E','W','E','W','E','W','E','W','E','W','E','W','E','E','W'],
-      ['W','E','W','E','E','E','W','E','E','E','W','E','E','E','W','E','E','E','E','W'],
-      ['W','E','E','E','W','E','E','E','W','E','E','E','W','E','E','E','E','W','E','W'],
-      ['W','W','W','E','W','W','W','E','W','W','W','E','W','W','W','E','W','W','E','W'],
-      ['W','E','E','E','E','E','E','E','E','E','E','E','E','E','E','E','E','E','E','W'],
-      ['W','E','W','W','W','E','E','E','W','W','W','E','E','E','W','W','W','E','E','W'],
-      ['W','E','E','E','E','E','W','E','E','E','E','E','W','E','E','E','E','E','G','W'],
-      ['W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W','W'],
+      ['W','W','W','W','W','W','W','W','W','W','W','W'],
+      ['W','P','E','E','B','E','E','E','E','E','A','W'],
+      ['W','E','W','E','W','E','W','E','W','E','E','W'],
+      ['W','E','W','E','E','E','W','E','E','B','E','W'],
+      ['W','E','E','E','W','E','E','E','W','E','E','W'],
+      ['W','W','W','E','W','W','W','E','W','W','W','W'],
+      ['W','E','E','E','E','E','E','E','E','E','E','W'],
+      ['W','E','W','W','W','E','E','E','W','W','W','W'],
+      ['W','E','E','E','E','E','W','E','E','E','G','W'],
+      ['W','W','W','W','W','W','W','W','W','W','W','W'],
     ]
   }
 ];
@@ -42,23 +42,27 @@ const maps = [
 // GAME STATE
 let currentMap = 0;
 let mapGrid = maps[currentMap].grid;
+const pushableBlocks = []; // {x,y}
 
 // Players
 const players = [
-  { x:0, y:0, color:'#00FFFF', keyUp:'w', keyDown:'s', keyLeft:'a', keyRight:'d' },
-  { x:0, y:0, color:'#FFFF00', keyUp:'ArrowUp', keyDown:'ArrowDown', keyLeft:'ArrowLeft', keyRight:'ArrowRight' }
+  { x:0, y:0, color:'#00FFFF', keyUp:'w', keyDown:'s', keyLeft:'a', keyRight:'d', speed:2.5 },
+  { x:0, y:0, color:'#FFFF00', keyUp:'ArrowUp', keyDown:'ArrowDown', keyLeft:'ArrowLeft', keyRight:'ArrowRight', speed:2.5 }
 ];
 
-// Initialize player positions based on map
-function initPlayers() {
+// Initialize player positions and pushable blocks
+function initMap() {
+  pushableBlocks.length = 0;
   for (let y=0;y<mapGrid.length;y++){
     for (let x=0;x<mapGrid[y].length;x++){
-      if (mapGrid[y][x] === 'P') { players[0].x = x; players[0].y = y; mapGrid[y][x]='E'; }
-      if (mapGrid[y][x] === 'A') { players[1].x = x; players[1].y = y; mapGrid[y][x]='E'; }
+      const tile = mapGrid[y][x];
+      if(tile==='P') { players[0].x=x*TILE_SIZE; players[0].y=y*TILE_SIZE; mapGrid[y][x]='E'; }
+      if(tile==='A') { players[1].x=x*TILE_SIZE; players[1].y=y*TILE_SIZE; mapGrid[y][x]='E'; }
+      if(tile==='B') { pushableBlocks.push({x:x*TILE_SIZE, y:y*TILE_SIZE}); mapGrid[y][x]='E'; }
     }
   }
 }
-initPlayers();
+initMap();
 
 // ------------------------
 // SPLITSCREEN TOGGLE
@@ -67,16 +71,22 @@ window.addEventListener('keydown', e => { if(e.key==='Tab'){ splitScreen = !spli
 
 // ------------------------
 // HELPER FUNCTIONS
-function drawTile(x, y, color){
+function drawRect(x,y,w,h,color){
   ctx.fillStyle = color;
-  ctx.fillRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+  ctx.fillRect(x,y,w,h);
   ctx.strokeStyle = '#222';
-  ctx.strokeRect(x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE);
+  ctx.strokeRect(x,y,w,h);
+}
+
+function isCollidingRect(a,b){
+  return a.x<a.x+b.w && a.x+a.w>b.x && a.y<a.y+b.h && a.y+a.h>b.y;
 }
 
 function isWalkable(x,y){
-  if (y<0||y>=mapGrid.length||x<0||x>=mapGrid[0].length) return false;
-  return mapGrid[y][x]==='E' || mapGrid[y][x]==='G';
+  const gridX = Math.floor(x/TILE_SIZE);
+  const gridY = Math.floor(y/TILE_SIZE);
+  if(gridY<0||gridY>=mapGrid.length||gridX<0||gridX>=mapGrid[0].length) return false;
+  return mapGrid[gridY][gridX] === 'E' || mapGrid[gridY][gridX] === 'G';
 }
 
 // ------------------------
@@ -89,23 +99,72 @@ function update(){
     if(keys[p.keyLeft]) dx=-1;
     if(keys[p.keyRight]) dx=1;
 
-    const newX = p.x + dx;
-    const newY = p.y + dy;
-    if(isWalkable(newX,newY)) p.x=newX, p.y=newY;
-
     if(dx!==0||dy!==0){
-      keys[p.keyUp]=keys[p.keyDown]=keys[p.keyLeft]=keys[p.keyRight]=false;
+      // Normalize diagonal movement
+      const len = Math.hypot(dx,dy) || 1;
+      dx = dx/len*p.speed;
+      dy = dy/len*p.speed;
+
+      // Attempt move with collision
+      movePlayer(p, dx, dy);
     }
   }
 }
 
+// Move player with collision & push blocks
+function movePlayer(p, dx, dy){
+  let newPos = {x:p.x+dx, y:p.y+dy, w:TILE_SIZE, h:TILE_SIZE};
+
+  // Check collision with walls
+  const gridX = Math.floor(newPos.x/TILE_SIZE);
+  const gridY = Math.floor(newPos.y/TILE_SIZE);
+  if(gridY<0||gridY>=mapGrid.length||gridX<0||gridX>=mapGrid[0].length) return;
+  if(mapGrid[gridY][gridX]==='W') return;
+
+  // Check collision with other blocks
+  for (const block of pushableBlocks){
+    const blockRect = {x:block.x, y:block.y, w:TILE_SIZE, h:TILE_SIZE};
+    if(isCollidingRect(newPos, blockRect)){
+      // Attempt to push
+      if(pushBlock(block, dx, dy)) { /* block moved, player can move */ }
+      else return; // cannot push, block blocked
+    }
+  }
+
+  // Move player
+  p.x += dx;
+  p.y += dy;
+}
+
+// Push block if possible
+function pushBlock(block, dx, dy){
+  const newPos = {x:block.x+dx, y:block.y+dy, w:TILE_SIZE, h:TILE_SIZE};
+
+  // Check map collision
+  const gridX = Math.floor(newPos.x/TILE_SIZE);
+  const gridY = Math.floor(newPos.y/TILE_SIZE);
+  if(gridY<0||gridY>=mapGrid.length||gridX<0||gridX>=mapGrid[0].length) return false;
+  if(mapGrid[gridY][gridX]==='W') return false;
+
+  // Check collision with other blocks
+  for (const b of pushableBlocks){
+    if(b===block) continue;
+    const rect = {x:b.x, y:b.y, w:TILE_SIZE, h:TILE_SIZE};
+    if(isCollidingRect(newPos, rect)) return false;
+  }
+
+  // Move block
+  block.x += dx;
+  block.y += dy;
+  return true;
+}
+
 // ------------------------
-// CAMERA & RENDER
+// RENDER
 function render(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
   if(splitScreen){
-    // Draw each player in own viewport
     const halfWidth = canvas.width/2;
     for(let i=0;i<2;i++){
       ctx.save();
@@ -114,49 +173,48 @@ function render(){
       ctx.clip();
 
       // Camera centers on player
-      const camX = players[i].x*TILE_SIZE - halfWidth/2 + TILE_SIZE/2;
-      const camY = players[i].y*TILE_SIZE - canvas.height/2 + TILE_SIZE/2;
+      const camX = players[i].x - halfWidth/2 + TILE_SIZE/2;
+      const camY = players[i].y - canvas.height/2 + TILE_SIZE/2;
       ctx.translate(-camX + i*halfWidth, -camY);
 
-      // Draw map
-      for(let y=0;y<mapGrid.length;y++){
-        for(let x=0;x<mapGrid[y].length;x++){
-          const tile = mapGrid[y][x];
-          if(tile==='W') drawTile(x,y,'#444');
-          else if(tile==='G') drawTile(x,y,'#66FF66');
-          else drawTile(x,y,'#111');
-        }
-      }
-
-      // Draw players
-      for(const p of players) drawTile(p.x, p.y, p.color);
+      drawMapAndEntities();
 
       ctx.restore();
-      // Split line
-      ctx.strokeStyle='#FFF'; ctx.beginPath();
+      ctx.strokeStyle='#FFF';
+      ctx.beginPath();
       ctx.moveTo(i*halfWidth,0); ctx.lineTo(i*halfWidth,canvas.height); ctx.stroke();
     }
   } else {
-    // Non-split: shared camera (center between players)
-    const centerX = (players[0].x+players[1].x)/2*TILE_SIZE;
-    const centerY = (players[0].y+players[1].y)/2*TILE_SIZE;
+    // Shared camera
+    const centerX = (players[0].x + players[1].x)/2;
+    const centerY = (players[0].y + players[1].y)/2;
     const camX = centerX - canvas.width/2;
     const camY = centerY - canvas.height/2;
     ctx.save();
     ctx.translate(-camX,-camY);
 
-    for(let y=0;y<mapGrid.length;y++){
-      for(let x=0;x<mapGrid[y].length;x++){
-        const tile = mapGrid[y][x];
-        if(tile==='W') drawTile(x,y,'#444');
-        else if(tile==='G') drawTile(x,y,'#66FF66');
-        else drawTile(x,y,'#111');
-      }
-    }
-    for(const p of players) drawTile(p.x, p.y, p.color);
-
+    drawMapAndEntities();
     ctx.restore();
   }
+}
+
+// Draw map, blocks, and players
+function drawMapAndEntities(){
+  // Map tiles
+  for(let y=0;y<mapGrid.length;y++){
+    for(let x=0;x<mapGrid[y].length;x++){
+      const tile = mapGrid[y][x];
+      if(tile==='W') drawRect(x*TILE_SIZE,y*TILE_SIZE,TILE_SIZE,TILE_SIZE,'#444');
+      else if(tile==='G') drawRect(x*TILE_SIZE,y*TILE_SIZE,TILE_SIZE,TILE_SIZE,'#66FF66');
+      else drawRect(x*TILE_SIZE,y*TILE_SIZE,TILE_SIZE,TILE_SIZE,'#111');
+    }
+  }
+
+  // Pushable blocks
+  for(const b of pushableBlocks) drawRect(b.x,b.y,TILE_SIZE,TILE_SIZE,'#FF66CC');
+
+  // Players
+  for(const p of players) drawRect(p.x,p.y,TILE_SIZE,TILE_SIZE,p.color);
 }
 
 // ------------------------
