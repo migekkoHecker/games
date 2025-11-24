@@ -60,6 +60,7 @@ let currentMap = 0;
 let mapGrid = maps[currentMap].grid;
 let pushableBlocks = [];
 let goals = [];
+let levelCompleted = false;
 
 const players = [
   {tileX:0, tileY:0, x:0, y:0, color:'#1E90FF', keyUp:'w', keyDown:'s', keyLeft:'a', keyRight:'d', moving:false, moveDir:null},
@@ -147,21 +148,36 @@ function update(){
 }
 
 function checkWinCondition(){
+  if(levelCompleted) return; // don't fire again
+
   for(const g of goals){
-    let covered=false;
+    let covered = false;
     for(const b of pushableBlocks){
-      if(b.x===g.x && b.y===g.y){ covered=true; break; }
+      if(b.x === g.x && b.y === g.y){
+        covered = true;
+        break;
+      }
     }
-    if(!covered) return;
+    if(!covered) return; // at least one goal missing a block
   }
-  setTimeout(()=>{ alert(`Level Completed: ${maps[currentMap].name}`); nextMap(); },10);
+
+  // All goals are covered -> level complete
+  levelCompleted = true;
+
+  setTimeout(() => {
+    alert(`Level Completed: ${maps[currentMap].name}`);
+    nextMap();
+  }, 10);
 }
 
+
 function nextMap(){
-  currentMap = (currentMap+1)%maps.length;
+  currentMap = (currentMap + 1) % maps.length;
   mapGrid = maps[currentMap].grid;
+  levelCompleted = false;   // <-- RESET flag
   initMap();
 }
+
 
 function render(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
