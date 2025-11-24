@@ -1,73 +1,48 @@
-// GAME ROOT
-const game = document.getElementById("game");
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-// UTILITY
-function clear() {
-  game.innerHTML = "";
-}
-function add(text) {
-  const p = document.createElement("p");
-  p.innerText = text;
-  game.appendChild(p);
-}
-function button(label, onclick) {
-  const b = document.createElement("button");
-  b.innerText = label;
-  b.onclick = onclick;
-  game.appendChild(b);
-}
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-// PLAYER + ENEMY DATA
-const player = { hp: 30, maxHp: 30, atk: 6 };
-const enemy  = { hp: 20, atk: 4 };
+// PLAYER DATA
+const p1 = { x: 100, y: 100, size: 40, color: "cyan", speed: 5 };
+const p2 = { x: 300, y: 100, size: 40, color: "yellow", speed: 5 };
 
-// MAIN MENU
-function menu() {
-  clear();
-  add("A wild enemy appears!");
-  button("Attack", attack);
-  button("Heal", heal);
-}
+let keys = {};
 
-// GAME ACTIONS
-function attack() {
-  clear();
-  enemy.hp -= player.atk;
-  add("You hit the enemy for " + player.atk);
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
 
-  if (enemy.hp <= 0) {
-    add("You won!");
-    return;
-  }
+// MOVEMENT LOGIC
+function movePlayers() {
+    // Player 1 (WASD)
+    if (keys["w"]) p1.y -= p1.speed;
+    if (keys["s"]) p1.y += p1.speed;
+    if (keys["a"]) p1.x -= p1.speed;
+    if (keys["d"]) p1.x += p1.speed;
 
-  player.hp -= enemy.atk;
-  add("Enemy hits you for " + enemy.atk);
-  add("HP: " + player.hp + "/" + player.maxHp);
-
-  if (player.hp <= 0) {
-    add("You died...");
-    return;
-  }
-
-  button("Continue", menu);
+    // Player 2 (Arrow keys)
+    if (keys["ArrowUp"]) p2.y -= p2.speed;
+    if (keys["ArrowDown"]) p2.y += p2.speed;
+    if (keys["ArrowLeft"]) p2.x -= p2.speed;
+    if (keys["ArrowRight"]) p2.x += p2.speed;
 }
 
-function heal() {
-  clear();
-  player.hp = Math.min(player.maxHp, player.hp + 5);
-  add("You heal 5 HP");
-  
-  player.hp -= enemy.atk;
-  add("Enemy hits you for " + enemy.atk);
-  add("HP: " + player.hp + "/" + player.maxHp);
-
-  if (player.hp <= 0) {
-    add("You died...");
-    return;
-  }
-
-  button("Continue", menu);
+// DRAW PLAYERS
+function drawPlayer(p) {
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x, p.y, p.size, p.size);
 }
 
-// START GAME
-menu();
+// GAME LOOP
+function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    movePlayers();
+    drawPlayer(p1);
+    drawPlayer(p2);
+
+    requestAnimationFrame(loop);
+}
+
+loop();
