@@ -62,8 +62,8 @@ let pushableBlocks = [];
 let goals = [];
 
 const players = [
-  {tileX:0, tileY:0, x:0, y:0, color:'#00FFFF', keyUp:'w', keyDown:'s', keyLeft:'a', keyRight:'d', moving:false, moveDir:null},
-  {tileX:0, tileY:0, x:0, y:0, color:'#FFFF00', keyUp:'ArrowUp', keyDown:'ArrowDown', keyLeft:'ArrowLeft', keyRight:'ArrowRight', moving:false, moveDir:null}
+  {tileX:0, tileY:0, x:0, y:0, color:'#1E90FF', keyUp:'w', keyDown:'s', keyLeft:'a', keyRight:'d', moving:false, moveDir:null},
+  {tileX:0, tileY:0, x:0, y:0, color:'#FF8C00', keyUp:'ArrowUp', keyDown:'ArrowDown', keyLeft:'ArrowLeft', keyRight:'ArrowRight', moving:false, moveDir:null}
 ];
 
 function initMap(){
@@ -186,6 +186,13 @@ function render(){
     drawMapAndEntities();
     ctx.restore();
   }
+}
+
+function drawRect(x, y, w, h, color){
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeStyle = '#222';
+    ctx.strokeRect(x, y, w, h);
 }
 
 function drawMapAndEntities(){
