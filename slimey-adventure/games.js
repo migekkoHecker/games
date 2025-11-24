@@ -14,26 +14,47 @@ canvas.height = window.innerHeight;
 // MAPS
 const maps = [
   {
-    name:"Teamwork Labyrinth 1",
+    name:"Teamwork Starter",
+    // Very simple introduction level
     grid:[
-      ['W','W','W','W','W','W','W','W','W','W'],
-      ['W','P','E','B','E','E','B','E','A','W'],
-      ['W','E','W','E','W','E','W','E','E','W'],
-      ['W','E','W','E','E','E','W','E','G','W'],
-      ['W','W','W','W','W','W','W','W','W','W'],
+      ['W','W','W','W','W','W','W'],
+      ['W','P','E','B','G','A','W'],
+      ['W','W','W','W','W','W','W']
     ]
+    // Explanation:
+    // Player1 (P) pushes the block onto the goal (G). Player2 (A) is just at the side.
   },
   {
-    name:"Teamwork Labyrinth 2",
+    name:"Double Push",
+    // Both players must push blocks to goals
     grid:[
-      ['W','W','W','W','W','W','W','W'],
-      ['W','P','B','E','E','B','A','W'],
-      ['W','E','W','E','E','W','E','W'],
-      ['W','G','E','B','B','E','G','W'],
-      ['W','W','W','W','W','W','W','W'],
+      ['W','W','W','W','W','W','W','W','W'],
+      ['W','P','B','E','G','E','B','A','W'],
+      ['W','E','W','E','W','E','W','E','W'],
+      ['W','E','E','E','E','E','E','E','W'],
+      ['W','W','W','W','W','W','W','W','W']
     ]
+    // Explanation:
+    // Player1 pushes left block to left goal.
+    // Player2 pushes right block to right goal.
+    // Both must cooperate to finish.
+  },
+  {
+    name:"Bridge the Gap",
+    // Players must move blocks sequentially to cross narrow paths
+    grid:[
+      ['W','W','W','W','W','W','W','W','W','W'],
+      ['W','P','E','B','E','G','E','B','E','A','W'],
+      ['W','E','W','E','W','E','W','E','W','E','W'],
+      ['W','E','E','E','E','E','E','E','E','E','W'],
+      ['W','W','W','W','W','W','W','W','W','W','W']
+    ]
+    // Explanation:
+    // Players must push blocks to create paths for each other.
+    // Cannot finish unless both push their blocks in correct order.
   }
 ];
+
 
 let currentMap = 0;
 let mapGrid = maps[currentMap].grid;
