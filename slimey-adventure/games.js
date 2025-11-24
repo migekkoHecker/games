@@ -105,25 +105,49 @@ function update(){
   checkWinCondition();
 }
 
-// Move player with collision & push blocks
-function movePlayer(p,dx,dy){
-  const newPos={x:p.x+dx,y:p.y+dy,w:TILE_SIZE,h:TILE_SIZE};
+function movePlayer(p, dx, dy){
+  // Attempt X movement
+  if(dx!==0){
+    let newX = p.x + dx;
+    const rectX = {x:newX, y:p.y, w:TILE_SIZE, h:TILE_SIZE};
 
-  const gridX=Math.floor(newPos.x/TILE_SIZE);
-  const gridY=Math.floor(newPos.y/TILE_SIZE);
-  if(gridY<0||gridY>=mapGrid.length||gridX<0||gridX>=mapGrid[0].length) return;
-  if(mapGrid[gridY][gridX]==='W') return;
-
-  for(const block of pushableBlocks){
-    const blockRect={x:block.x,y:block.y,w:TILE_SIZE,h:TILE_SIZE};
-    if(isCollidingRect(newPos,blockRect)){
-      if(pushBlock(block,dx,dy)){}
-      else return;
+    if(!checkCollision(rectX)){
+      p.x = newX;
     }
   }
-  p.x+=dx;
-  p.y+=dy;
+
+  // Attempt Y movement
+  if(dy!==0){
+    let newY = p.y + dy;
+    const rectY = {x:p.x, y:newY, w:TILE_SIZE, h:TILE_SIZE};
+
+    if(!checkCollision(rectY)){
+      p.y = newY;
+    }
+  }
 }
+
+// Check collisions with walls and blocks
+function checkCollision(rect){
+  // Walls
+  const gridX = Math.floor(rect.x / TILE_SIZE);
+  const gridY = Math.floor(rect.y / TILE_SIZE);
+  if(gridY<0||gridY>=mapGrid.length||gridX<0||gridX>=mapGrid[0].length) return true;
+  if(mapGrid[gridY][gridX]==='W') return true;
+
+  // Blocks
+  for(const block of pushableBlocks){
+    const blockRect={x:block.x, y:block.y, w:TILE_SIZE, h:TILE_SIZE};
+    if(isCollidingRect(rect, blockRect)){
+      // Try pushing
+      if(pushBlock(block, rect.x - rectPrevX, rect.y - rectPrevY)){
+        continue; // pushed block, no collision
+      } else return true; // block cannot move
+    }
+  }
+  return false;
+}
+
 
 // Push block if possible
 function pushBlock(block,dx,dy){
