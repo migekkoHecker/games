@@ -1,33 +1,12 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Slimey Adventure</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Slimey Adventure</h1>
 
   <div id="game"></div>
 
-  <div id="ui">
-    <div id="current-turn"></div>
-    <div id="menu">
-      <!-- Main Menu (2x2 grid) -->
-      <div class="menu-grid main-menu">
-        <button class="menu-item" data-type="action">Actions</button>
-        <button class="menu-item" data-type="ability">Ability</button>
-        <button class="menu-item" data-type="item">Item</button>
-        <button id="skipTurn">Skip Turn</button>
-      </div>
-
-      <!-- Submenu container -->
-      <div class="menu-grid sub-menu" id="submenu" style="display: none;"></div>
-    </div>
-  </div>
-
-  <script src="data.js"></script>
-  <script src="script.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>
